@@ -86,7 +86,7 @@
 
         <!-- Hero Tagline Banner -->
         <div class="px-1 pt-0.5">
-          <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-100">拍攝，先選好器材</h2>
+          <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-100">拍攝前，先選好器材。</h2>
         </div>
 
         <!-- 1. Inventory Summary & Search Bar -->
@@ -1019,10 +1019,44 @@
       lucide.createIcons();
     }
 
-    // ==================== SCHEDULE MODAL (14-DAY CALENDAR VIEW) ====================
-    function openScheduleModal(eqId) {
+    // ==================== SCHEDULE MODAL (14-DAY CALENDAR VIEW WITH DIRECT DATE PICKING) ====================
+    let scheduleModalEqId = null;
+    let schedulePickStep = "start"; // "start" or "end"
+
+    function handleTimelineDateClick(clickedDateStr) {
+      if (!scheduleModalEqId) return;
+      const availOnClicked = getAvailableQtyForRange(scheduleModalEqId, clickedDateStr, clickedDateStr);
+      if (availOnClicked <= 0) return;
+
+      if (schedulePickStep === "start") {
+        rentalStartDate = clickedDateStr;
+        if (!rentalEndDate || rentalEndDate < rentalStartDate) {
+          rentalEndDate = rentalStartDate;
+        }
+        schedulePickStep = "end";
+      } else {
+        if (clickedDateStr < rentalStartDate) {
+          rentalStartDate = clickedDateStr;
+          rentalEndDate = clickedDateStr;
+          schedulePickStep = "end";
+        } else {
+          rentalEndDate = clickedDateStr;
+          schedulePickStep = "start";
+        }
+      }
+
+      clampCartToAvailable();
+      renderAll();
+      openScheduleModal(scheduleModalEqId, false);
+    }
+
+    function openScheduleModal(eqId, resetStep = true) {
       const eq = equipmentList.find(e => e.id === eqId);
       if (!eq) return;
+      scheduleModalEqId = eqId;
+      if (resetStep) {
+        schedulePickStep = "start";
+      }
 
       document.getElementById("sched-modal-cat").textContent = eq.category;
       document.getElementById("sched-modal-title").textContent = `${eq.name}（總數 ${eq.totalQty} 件）`;
@@ -1037,18 +1071,32 @@
         const dStr = addDaysISO(todayStr, i);
         const availOnDay = getAvailableQtyForRange(eq.id, dStr, dStr);
         const isFree = availOnDay > 0;
+        const isStart = dStr === rentalStartDate;
+        const isEnd = dStr === rentalEndDate;
         const isSelected = dStr >= rentalStartDate && dStr <= rentalEndDate;
 
+        const tagLabel = isStart && isEnd
+          ? "起/還"
+          : isStart
+          ? "借出"
+          : isEnd
+          ? "歸還"
+          : isFree
+          ? `可借 ${availOnDay}`
+          : "已借出";
+
         timelineCells.push(`
-          <div class="rounded-2xl p-2 border text-center ${
-            isFree
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-              : "bg-rose-500/15 border-rose-500/35 text-rose-300"
-          } ${isSelected ? "ring-2 ring-zinc-200" : ""}">
-            <div class="text-[10px] text-zinc-400">${getWeekdayZh(dStr)}</div>
-            <div class="font-bold text-xs text-zinc-100 my-0.5">${formatShortDate(dStr)}</div>
-            <div class="text-[10px] font-semibold">${isFree ? `可借 ${availOnDay}` : "已借出"}</div>
-          </div>
+          <button type="button" onclick="handleTimelineDateClick('${dStr}')" ${!isFree ? "disabled" : ""} class="rounded-2xl p-2 border text-center transition ${
+            !isFree
+              ? "bg-rose-500/15 border-rose-500/35 text-rose-300 opacity-65 cursor-not-allowed"
+              : isSelected
+              ? "bg-zinc-100 border-zinc-100 text-zinc-950 ring-2 ring-zinc-300 cursor-pointer"
+              : "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 cursor-pointer"
+          }">
+            <div class="text-[10px] ${isSelected && isFree ? "text-zinc-600" : "text-zinc-400"}">${getWeekdayZh(dStr)}</div>
+            <div class="font-bold text-xs ${isSelected && isFree ? "text-zinc-950" : "text-zinc-100"} my-0.5">${formatShortDate(dStr)}</div>
+            <div class="text-[10px] font-bold ${isSelected && isFree ? "text-zinc-950" : ""}">${tagLabel}</div>
+          </button>
         `);
       }
 
@@ -1088,9 +1136,13 @@
         ${suggestionHTML}
 
         <div>
-          <div class="flex items-center justify-between text-xs mb-2">
-            <span class="font-semibold text-zinc-200">未來 14 天檔期一覽</span>
-            <span class="text-[11px] text-zinc-300 font-medium">白框為目前所選日期</span>
+          <div class="flex items-center justify-between gap-2 text-xs mb-2">
+            <span class="font-semibold text-zinc-200">未來 14 天檔期（點選日期直接設定借還）</span>
+            <span class="text-[11px] text-emerald-400 font-semibold">${
+              schedulePickStep === "start"
+                ? `目前：${formatShortDate(rentalStartDate)}~${formatShortDate(rentalEndDate)}（點選起租日）`
+                : `起租 ${formatShortDate(rentalStartDate)}（請點選歸還日）`
+            }</span>
           </div>
           <div class="grid grid-cols-7 gap-1.5">
             ${timelineCells.join("")}
