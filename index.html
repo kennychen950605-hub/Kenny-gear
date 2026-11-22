@@ -1,0 +1,2255 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>肯尼器材借用區 | Kenny Studio Gear</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        if (window.tailwind) {
+            tailwind.config = {
+                darkMode: 'class',
+                theme: {
+                    extend: {
+                        colors: {
+                            studio: {
+                                950: '#0B0D12',
+                                900: '#131720',
+                                800: '#1C222E',
+                                700: '#2A3142',
+                                amber: '#F59E0B'
+                            }
+                        }
+                    }
+                }
+            };
+        }
+    </script>
+    <style>
+        :root {
+            --bg-main: #0B0D12;
+            --bg-card: #131720;
+            --bg-elevated: #1C222E;
+            --border-subtle: #252C3B;
+            --amber: #F59E0B;
+            --text-primary: #F4F4F5;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", "Segoe UI", Roboto, sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        /* 讓深色模式下的原生日期選擇器日曆圖示清晰可見 */
+        input[type="date"] {
+            color-scheme: dark;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.85) sepia(0.4) saturate(3) hue-rotate(5deg);
+            cursor: pointer;
+            padding: 2px;
+        }
+        .hidden { display: none !important; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .gear-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 1rem;
+            transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+        @media (hover: hover) {
+            .gear-card:hover {
+                transform: translateY(-2px);
+                border-color: rgba(245, 158, 11, 0.5);
+                box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.6);
+            }
+        }
+        .pb-safe {
+            padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
+        }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #0B0D12; }
+        ::-webkit-scrollbar-thumb { background: #2A3142; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #F59E0B; }
+    </style>
+</head>
+<body class="bg-[#0B0D12] text-zinc-100 min-h-screen flex flex-col">
+
+    <!-- ==================== 頂部導覽列 ==================== -->
+    <header class="sticky top-0 z-30 bg-[#0B0D12]/95 backdrop-blur-md border-b border-zinc-800/90">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+            <!-- 第一列：品牌 Logo (連點 5 次解鎖管理員) 與借用清單按鈕 -->
+            <div class="flex items-center justify-between gap-2">
+                <div id="brand-secret-trigger" onclick="handleSecretBrandTap()" class="flex items-center gap-2.5 min-w-0 select-none cursor-pointer">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-zinc-950 font-bold shadow-lg shadow-amber-500/20 shrink-0">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 4"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <h1 class="text-base sm:text-xl font-bold tracking-tight text-white flex items-center gap-2 whitespace-nowrap">
+                            <span>肯尼器材借用區</span>
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0">免租金登記</span>
+                        </h1>
+                        <p class="text-[11px] text-zinc-400 hidden sm:block truncate">Kenny Studio 影視器材庫存、日期預約與隨附配件點交</p>
+                    </div>
+                </div>
+
+                <!-- 右側功能按鈕 -->
+                <div class="flex items-center gap-2 shrink-0">
+                    <!-- 管理員鎖定狀態徽章 -->
+                    <button id="admin-lock-btn" type="button" onclick="handleAdminLockClick()" title="管理員模式狀態"
+                        class="px-2.5 py-2 sm:px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer">
+                        <span id="admin-lock-icon" class="text-xs">🔒</span>
+                        <span id="admin-lock-text" class="hidden sm:inline text-xs font-medium">管理員鎖定</span>
+                    </button>
+
+                    <!-- 借用器材清單按鈕 -->
+                    <button type="button" onclick="toggleCartDrawer(true)" class="px-3 py-2 sm:px-4 sm:py-2 rounded-xl bg-[#1C222E] hover:bg-zinc-700 border border-zinc-700 text-zinc-100 transition-all flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer">
+                        <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                        <span class="hidden sm:inline text-sm font-medium">借用清單</span>
+                        <span id="cart-badge" class="px-1.5 py-0.5 text-xs font-bold rounded-full bg-amber-500 text-zinc-950 font-mono">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 第二列：主分頁導覽 (器材借用 / 誰借走了 / 管理後台[解鎖後顯示]) -->
+            <nav id="main-nav-grid" class="mt-2.5 grid grid-cols-2 gap-1.5 bg-[#131720] p-1 rounded-xl border border-zinc-800">
+                <button id="nav-catalog" type="button" onclick="switchTab('catalog')" class="py-2 px-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-amber-500 text-zinc-950 shadow-sm flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer">
+                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                    <span>器材借用</span>
+                </button>
+                <button id="nav-records" type="button" onclick="switchTab('records')" class="py-2 px-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer">
+                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>誰借走了</span>
+                    <span id="nav-active-badge" class="hidden px-1.5 py-0.2 text-[11px] font-bold rounded-full bg-amber-500/20 text-amber-400 font-mono">0</span>
+                </button>
+                <button id="nav-manage" type="button" onclick="switchTab('manage')" class="hidden py-2 px-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer">
+                    <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>管理</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ==================== 主內容區 ==================== -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-28">
+
+        <!-- ==================== 視圖 1：器材借用總覽 ==================== -->
+        <section id="view-catalog" class="space-y-4 sm:space-y-5">
+
+            <!-- ★ 醒目「選擇借用日期區間」專屬功能卡片 ★ -->
+            <div class="bg-gradient-to-br from-[#161C28] via-[#131720] to-[#131720] p-4 sm:p-5 rounded-2xl border border-amber-500/45 shadow-lg shadow-black/40 space-y-3.5">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-400 flex items-center justify-center text-base shrink-0">📅</span>
+                        <div>
+                            <h2 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                                <span>選擇借用日期區間</span>
+                                <span id="top-days-badge" class="px-2.5 py-0.5 rounded-full bg-amber-500 text-zinc-950 text-xs font-extrabold font-mono shadow-sm">
+                                    共計借用 1 天
+                                </span>
+                            </h2>
+                            <p class="text-[11px] text-zinc-400">先設定借出與歸還日期，下方加入器材時將自動套用此時段</p>
+                        </div>
+                    </div>
+
+                    <!-- 一鍵快速天數按鈕 -->
+                    <div class="flex flex-wrap items-center gap-1.5" id="top-quick-duration-pills">
+                        <button type="button" onclick="applyQuickDuration(0)" data-duration="0" class="quick-dur-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-[#0B0D12] hover:bg-amber-500/20 text-zinc-300 hover:text-amber-300 border border-zinc-700/90 transition-colors cursor-pointer whitespace-nowrap">
+                            當天歸還 (1天)
+                        </button>
+                        <button type="button" onclick="applyQuickDuration(1)" data-duration="1" class="quick-dur-btn px-2.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/50 transition-colors cursor-pointer whitespace-nowrap">
+                            借 2 天
+                        </button>
+                        <button type="button" onclick="applyQuickDuration(2)" data-duration="2" class="quick-dur-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-[#0B0D12] hover:bg-amber-500/20 text-zinc-300 hover:text-amber-300 border border-zinc-700/90 transition-colors cursor-pointer whitespace-nowrap">
+                            借 3 天
+                        </button>
+                        <button type="button" onclick="applyQuickDuration(6)" data-duration="6" class="quick-dur-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-[#0B0D12] hover:bg-amber-500/20 text-zinc-300 hover:text-amber-300 border border-zinc-700/90 transition-colors cursor-pointer whitespace-nowrap">
+                            借 1 週 (7天)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 雙日期選擇輸入框 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div class="bg-[#0B0D12] p-3 rounded-xl border border-zinc-800 focus-within:border-amber-500 transition-colors">
+                        <div class="flex items-center justify-between text-[11px] text-zinc-400 mb-1">
+                            <span class="font-medium text-amber-400">借出日期 (起租日)</span>
+                            <span id="top-start-weekday" class="font-mono text-zinc-400">--</span>
+                        </div>
+                        <input type="date" id="top-rent-start" onchange="handleDateInputChange('top', 'start')"
+                            class="w-full bg-transparent text-sm sm:text-base font-bold text-white font-mono outline-none cursor-pointer">
+                    </div>
+
+                    <div class="bg-[#0B0D12] p-3 rounded-xl border border-zinc-800 focus-within:border-amber-500 transition-colors">
+                        <div class="flex items-center justify-between text-[11px] text-zinc-400 mb-1">
+                            <span class="font-medium text-emerald-400">預計歸還日期</span>
+                            <span id="top-end-weekday" class="font-mono text-zinc-400">--</span>
+                        </div>
+                        <input type="date" id="top-rent-end" onchange="handleDateInputChange('top', 'end')"
+                            class="w-full bg-transparent text-sm sm:text-base font-bold text-white font-mono outline-none cursor-pointer">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 庫存狀態儀表板與搜尋列 -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-center bg-[#131720] p-3.5 sm:p-4 rounded-2xl border border-zinc-800/90">
+                <div class="lg:col-span-5 grid grid-cols-3 gap-2">
+                    <div class="bg-[#0B0D12] p-2.5 rounded-xl border border-zinc-800/80">
+                        <div class="text-[10px] sm:text-[11px] text-zinc-400 whitespace-nowrap">總器材件數</div>
+                        <div id="stat-total" class="text-base sm:text-xl font-bold text-white mt-0.5 font-mono">38</div>
+                    </div>
+                    <div class="bg-[#0B0D12] p-2.5 rounded-xl border border-zinc-800/80">
+                        <div class="text-[10px] sm:text-[11px] text-zinc-400 whitespace-nowrap">目前可借</div>
+                        <div id="stat-available" class="text-base sm:text-xl font-bold text-emerald-400 mt-0.5 font-mono">38</div>
+                    </div>
+                    <div class="bg-[#0B0D12] p-2.5 rounded-xl border border-zinc-800/80">
+                        <div class="text-[10px] sm:text-[11px] text-zinc-400 whitespace-nowrap">本機已借出</div>
+                        <div id="stat-rented" class="text-base sm:text-xl font-bold text-amber-400 mt-0.5 font-mono">0</div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-7 flex flex-col sm:flex-row gap-2">
+                    <div class="relative flex-1">
+                        <svg class="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="搜尋器材名稱、分類或隨附配件 (如: FX30, 電池, 燈架)..." 
+                            class="w-full pl-9 pr-8 py-2.5 bg-[#0B0D12] border border-zinc-800 focus:border-amber-500 rounded-xl text-xs sm:text-sm text-zinc-100 placeholder-zinc-500 outline-none transition-colors">
+                        <button id="clear-search-btn" type="button" onclick="clearSearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white text-xs px-1 cursor-pointer">✕</button>
+                    </div>
+                    <label class="flex items-center gap-2 px-3 py-2.5 bg-[#0B0D12] border border-zinc-800 rounded-xl cursor-pointer select-none hover:border-zinc-700 transition-colors shrink-0">
+                        <input type="checkbox" id="filter-available-only" onchange="renderCatalog()" class="w-4 h-4 accent-amber-500 rounded cursor-pointer">
+                        <span class="text-xs sm:text-sm text-zinc-300 whitespace-nowrap">僅顯示可借</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 9 大分類水平滑動篩選膠囊 -->
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1" id="category-tabs"></div>
+
+            <!-- 器材卡片網格 -->
+            <div id="equipment-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4"></div>
+
+            <!-- 無符合搜尋結果提示 -->
+            <div id="empty-state" class="hidden py-14 text-center bg-[#131720] rounded-2xl border border-dashed border-zinc-800">
+                <div class="text-3xl mb-2">🔎</div>
+                <h3 class="text-base font-medium text-zinc-200">找不到符合條件的器材</h3>
+                <p class="text-xs sm:text-sm text-zinc-500 mt-1">請嘗試更換關鍵字或重設篩選條件</p>
+                <button type="button" onclick="resetFilters()" class="mt-4 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold rounded-xl transition-colors cursor-pointer">
+                    顯示全部器材
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== 視圖 2：誰借走了 (借用紀錄與 Formspree 雲端收件夾入口) ==================== -->
+        <section id="view-records" class="hidden space-y-4 sm:space-y-5">
+            <!-- 頂部狀態與 Formspree 雲端回覆總覽卡片 -->
+            <div class="bg-[#131720] p-4 sm:p-5 rounded-2xl border border-zinc-800/90 space-y-3.5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                            <span>👥</span>
+                            <span>誰借走了｜借用申請紀錄與歸還日期總覽</span>
+                        </h2>
+                        <p class="text-xs text-zinc-400 mt-1">
+                            所有線上送出的借用單皆已同步寄送至您的信箱與 Formspree 後台；下方同時顯示本機借出清單與歸還到期狀態。
+                        </p>
+                    </div>
+                    <a href="https://formspree.io/forms/xjywagqv/submissions" target="_blank" rel="noopener noreferrer"
+                       class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 shadow-lg shadow-amber-500/20">
+                        <span>📬 查看所有人的線上填寫回覆 (Formspree)</span>
+                        <span>↗</span>
+                    </a>
+                </div>
+
+                <!-- 篩選列 -->
+                <div class="flex items-center justify-between gap-2 pt-3 border-t border-zinc-800/80">
+                    <div class="flex items-center gap-1.5 bg-[#0B0D12] p-1 rounded-xl border border-zinc-800">
+                        <button type="button" onclick="setRecordFilter('borrowed')" id="rec-filter-borrowed" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-zinc-950 whitespace-nowrap cursor-pointer">借出中</button>
+                        <button type="button" onclick="setRecordFilter('all')" id="rec-filter-all" class="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-white whitespace-nowrap cursor-pointer">全部紀錄</button>
+                        <button type="button" onclick="setRecordFilter('returned')" id="rec-filter-returned" class="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-white whitespace-nowrap cursor-pointer">已歸還</button>
+                    </div>
+                    <span id="records-count-label" class="text-xs text-zinc-400 font-mono">共 0 筆</span>
+                </div>
+            </div>
+
+            <!-- 借用紀錄清單 -->
+            <div id="records-list" class="space-y-3.5"></div>
+        </section>
+
+        <!-- ==================== 視圖 3：管理員後台 (連點 Logo 5 次解鎖後可進入) ==================== -->
+        <section id="view-manage" class="hidden space-y-4 sm:space-y-5">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#131720] p-4 sm:p-5 rounded-2xl border border-amber-500/40">
+                <div>
+                    <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                        <span>🛠️</span>
+                        <span>管理員後台：器材庫存與隨附配件管理</span>
+                    </h2>
+                    <p class="text-xs text-zinc-400 mt-1">已解鎖管理員模式。可編輯全站 31 項器材名稱、分類、總數量與隨附點交配件清單。</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" onclick="openGearEditorModal(null)" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold transition-colors whitespace-nowrap shrink-0 cursor-pointer">
+                        + 新增器材
+                    </button>
+                    <button type="button" onclick="exportInventoryJSON()" class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer">
+                        ⬇️ 匯出 JSON
+                    </button>
+                    <label class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 text-xs font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0">
+                        ⬆️ 匯入 JSON
+                        <input type="file" accept=".json" onchange="importInventoryJSON(event)" class="hidden">
+                    </label>
+                    <button type="button" onclick="confirmResetSystem()" class="px-3 py-2 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer">
+                        ↺ 重置預設資料
+                    </button>
+                </div>
+            </div>
+
+            <!-- Formspree 連線狀態與管理員密碼設定 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="bg-[#131720] border border-emerald-500/30 rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-3">
+                    <div class="space-y-1">
+                        <h3 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                            <span>✅</span>
+                            <span>Formspree 雲端表單接收端點已綁定</span>
+                        </h3>
+                        <p class="text-xs text-zinc-400 font-mono break-all">https://formspree.io/f/xjywagqv</p>
+                        <p class="text-xs text-zinc-400 pt-1">任何人在網站送出借用申請，皆會自動傳送至您的信箱與 Formspree 後台。</p>
+                    </div>
+                    <div>
+                        <a href="https://formspree.io/forms/xjywagqv/submissions" target="_blank" rel="noopener noreferrer"
+                           class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-colors">
+                            <span>開啟 Formspree 後台查看所有提交名單</span>
+                            <span>↗</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="bg-[#131720] border border-zinc-800/90 rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-3">
+                    <div class="space-y-1">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <span>🔑</span>
+                            <span>變更管理員解鎖密碼</span>
+                        </h3>
+                        <p class="text-xs text-zinc-400">修改後立即生效，下次重新上鎖後需使用新密碼登入（預設為 8888）。</p>
+                    </div>
+                    <form onsubmit="handleChangeAdminPassword(event)" class="flex items-center gap-2">
+                        <input type="password" id="new-admin-password" required minlength="4" maxlength="20" placeholder="輸入新密碼 (至少4碼)" class="flex-1 px-3 py-2 bg-[#0B0D12] border border-zinc-700 focus:border-amber-500 rounded-xl text-xs text-white outline-none">
+                        <button type="submit" class="px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 text-xs font-bold transition-colors whitespace-nowrap shrink-0 cursor-pointer">
+                            更新密碼
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 全部器材一覽管理表格 -->
+            <div class="bg-[#131720] border border-zinc-800/90 rounded-2xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[620px]">
+                        <thead>
+                            <tr class="border-b border-zinc-800 bg-[#0B0D12]/80 text-[11px] uppercase tracking-wider text-zinc-400">
+                                <th class="py-3 px-4 whitespace-nowrap">分類</th>
+                                <th class="py-3 px-4 whitespace-nowrap">器材名稱</th>
+                                <th class="py-3 px-4 whitespace-nowrap">庫存 (可借 / 總數)</th>
+                                <th class="py-3 px-4">隨附配件點交清單</th>
+                                <th class="py-3 px-4 text-right whitespace-nowrap">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="manage-table-body" class="divide-y divide-zinc-800/70 text-xs sm:text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== 底部固定浮動借用清單快捷列 ==================== -->
+    <div id="floating-cart-bar" class="fixed bottom-0 inset-x-0 z-30 bg-[#131720]/95 backdrop-blur-md border-t border-amber-500/50 px-4 py-3 pb-safe shadow-[0_-10px_30px_rgba(0,0,0,0.75)] transition-transform duration-300 translate-y-full">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-amber-500 text-zinc-950 flex items-center justify-center font-bold font-mono text-base shrink-0 shadow-md" id="floating-cart-count">
+                    0
+                </div>
+                <div class="min-w-0">
+                    <div class="text-xs font-bold text-white truncate" id="floating-cart-summary">
+                        已選 0 項 / 共 0 件器材
+                    </div>
+                    <div class="text-[11px] text-amber-400 font-mono truncate" id="floating-cart-dates">
+                        📅 -- ～ -- (共 1 天)
+                    </div>
+                </div>
+            </div>
+            <button type="button" onclick="toggleCartDrawer(true)" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs sm:text-sm shadow-lg shadow-amber-500/20 flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer">
+                <span>填寫借用單</span>
+                <span>→</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== 頁尾 ==================== -->
+    <footer class="border-t border-zinc-800/80 bg-[#0B0D12] py-6 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-500 text-center sm:text-left">
+            <p>© 2026 肯尼器材借用區 (Kenny Studio). 器材無償借用支援，歸還前請依清單點交配件。</p>
+            <p class="flex items-center gap-1.5 text-zinc-400">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span id="storage-status-text">已連線 Formspree 雲端收件 (31 品項 / 38 件)</span>
+            </p>
+        </div>
+    </footer>
+
+    <!-- ==================== 借用清單與申請表單側邊抽屜 ==================== -->
+    <div id="cart-overlay" onclick="toggleCartDrawer(false)" class="fixed inset-0 bg-black/75 z-40 hidden"></div>
+    <aside id="cart-drawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-[#131720] border-l border-zinc-800 z-50 transform translate-x-full transition-transform duration-300 ease-out flex flex-col shadow-2xl">
+        <div class="p-4 sm:p-5 border-b border-zinc-800 flex items-center justify-between bg-[#0B0D12]/80">
+            <div class="flex items-center gap-2.5">
+                <span class="text-lg">🎒</span>
+                <div>
+                    <h2 class="text-base font-bold text-white">器材借用申請單</h2>
+                    <p class="text-[11px] text-zinc-400">確認借用日期、器材與配件後送出申請</p>
+                </div>
+            </div>
+            <button type="button" onclick="toggleCartDrawer(false)" class="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 text-sm cursor-pointer">✕</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5">
+            <!-- 已選器材清單 -->
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">已選器材與配件明細 (<span id="drawer-item-count">0</span>)</span>
+                    <button id="clear-cart-btn" type="button" onclick="clearCart()" class="text-xs text-zinc-500 hover:text-red-400 hidden cursor-pointer">清空清單</button>
+                </div>
+                <div id="cart-items-container" class="space-y-2.5"></div>
+            </div>
+
+            <!-- 借用人資料與日期選擇表單 -->
+            <form id="checkout-form" onsubmit="handleCheckout(event)" class="space-y-3.5 pt-4 border-t border-zinc-800 hidden">
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-amber-400">填寫借用人與日期資訊</h3>
+
+                <div>
+                    <label class="block text-xs text-zinc-400 mb-1">借用人姓名 / 劇組名稱 <span class="text-amber-500">*</span></label>
+                    <input type="text" id="borrower-name" required placeholder="例如：王小明 / 畢業製作攝影組" 
+                        class="w-full px-3 py-2.5 bg-[#0B0D12] border border-zinc-800 focus:border-amber-500 rounded-xl text-sm text-white outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-zinc-400 mb-1">聯絡方式 (電話 / IG / Email) <span class="text-amber-500">*</span></label>
+                    <input type="text" id="borrower-contact" required placeholder="例如：0912-345-678 / IG: @kenny_dp" 
+                        class="w-full px-3 py-2.5 bg-[#0B0D12] border border-zinc-800 focus:border-amber-500 rounded-xl text-sm text-white outline-none">
+                </div>
+
+                <!-- ★ 抽屜內的強化日期選擇區間卡片 ★ -->
+                <div class="bg-[#0B0D12] p-3.5 rounded-xl border border-amber-500/40 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-white flex items-center gap-1.5">
+                            <span>📅</span>
+                            <span>借用日期區間</span>
+                        </span>
+                        <span id="drawer-days-badge" class="px-2 py-0.5 rounded-md bg-amber-500 text-zinc-950 text-xs font-extrabold font-mono">
+                            共計借用 1 天
+                        </span>
+                    </div>
+
+                    <!-- 快速天數按鈕 -->
+                    <div class="grid grid-cols-4 gap-1.5">
+                        <button type="button" onclick="applyQuickDuration(0)" data-duration="0" class="quick-dur-btn py-1.5 px-1 rounded-lg text-[11px] font-semibold bg-[#131720] text-zinc-300 border border-zinc-800 transition-colors cursor-pointer text-center">
+                            當天 (1天)
+                        </button>
+                        <button type="button" onclick="applyQuickDuration(1)" data-duration="1" class="quick-dur-btn py-1.5 px-1 rounded-lg text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/50 transition-colors cursor-pointer text-center">
+                            借 2 天
+                        </button>
+                        <button type="button" onclick="applyQuickDuration(2)" data-duration="2" class="quick-dur-btn py-1.5 px-1 rounded-lg text-[11px] font-semibold bg-[#131720] text-zinc-300 border border-zinc-800 transition-colors cursor-pointer text-center">
+                            借 3 天
+                        </button>
+                        <button type="button" onclick="applyQuickDuration(6)" data-duration="6" class="quick-dur-btn py-1.5 px-1 rounded-lg text-[11px] font-semibold bg-[#131720] text-zinc-300 border border-zinc-800 transition-colors cursor-pointer text-center">
+                            1 週 (7天)
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <div>
+                            <label class="block text-[11px] text-amber-400 mb-1">借出日期 (起租) <span class="text-amber-500">*</span></label>
+                            <input type="date" id="rent-start" required onchange="handleDateInputChange('drawer', 'start')"
+                                class="w-full px-2.5 py-2 bg-[#131720] border border-zinc-700 focus:border-amber-500 rounded-lg text-xs text-white font-mono outline-none cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-emerald-400 mb-1">預計歸還日期 <span class="text-amber-500">*</span></label>
+                            <input type="date" id="rent-end" required onchange="handleDateInputChange('drawer', 'end')"
+                                class="w-full px-2.5 py-2 bg-[#131720] border border-zinc-700 focus:border-amber-500 rounded-lg text-xs text-white font-mono outline-none cursor-pointer">
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-zinc-800/80 flex justify-between items-center text-xs">
+                        <span class="text-zinc-400">借出總件數 / 費用</span>
+                        <span class="text-emerald-400 font-bold"><span id="summary-pieces-display" class="text-amber-400 font-mono">0 件</span> ｜ 免租金</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-zinc-400 mb-1">拍攝用途 / 備註事項</label>
+                    <input type="text" id="rent-note" placeholder="例如：校園微電影拍攝、棚內訪談..." 
+                        class="w-full px-3 py-2.5 bg-[#0B0D12] border border-zinc-800 focus:border-amber-500 rounded-xl text-sm text-white outline-none">
+                </div>
+
+                <button id="submit-borrow-btn" type="submit" class="w-full py-3.5 px-4 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-sm rounded-xl shadow-lg shadow-amber-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                    <span>確認送出借用申請</span>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- ==================== 借用申請成功確認彈窗 ==================== -->
+    <div id="receipt-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-[#131720] border border-zinc-700 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-zinc-800 flex items-center justify-between bg-[#0B0D12]">
+                <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm sm:text-base">
+                    <span>✅</span>
+                    <span>借用申請已送出並通知肯尼！</span>
+                </div>
+                <button type="button" onclick="closeReceiptModal()" class="p-1 rounded-lg text-zinc-400 hover:text-white cursor-pointer">✕</button>
+            </div>
+            <div class="p-4 sm:p-5 overflow-y-auto space-y-4">
+                <p class="text-xs text-zinc-300 leading-relaxed">
+                    您的借用日期與器材清單已同步傳送給管理員，並記錄於本機「誰借走了」分頁中。取件與歸還時請依照下方隨附配件逐項核對：
+                </p>
+
+                <!-- 借用明細文本預覽 -->
+                <div class="bg-[#0B0D12] border border-zinc-800 rounded-xl p-3 font-mono text-xs text-zinc-200 whitespace-pre-wrap leading-relaxed" id="receipt-text-preview"></div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button type="button" onclick="copyReceiptText()" class="py-2.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 font-medium text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
+                        <span>📋 複製借用明細</span>
+                    </button>
+                    <button type="button" onclick="closeReceiptModal(); switchTab('records');" class="py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
+                        <span>👥 查看誰借走了</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 管理員密碼驗證彈窗 ==================== -->
+    <div id="admin-login-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#131720] border border-zinc-700 rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-zinc-800 bg-[#0B0D12] flex items-center justify-between">
+                <div class="flex items-center gap-2 text-amber-400 font-bold text-sm sm:text-base">
+                    <span>🔐</span>
+                    <span>管理員身分驗證</span>
+                </div>
+                <button type="button" onclick="closeAdminLoginModal()" class="p-1 rounded-lg text-zinc-400 hover:text-white cursor-pointer">✕</button>
+            </div>
+            <form onsubmit="submitAdminLogin(event)" class="p-5 space-y-4">
+                <p class="text-xs text-zinc-300 leading-relaxed">
+                    請輸入管理員驗證密碼以解鎖「點交歸還」、「刪除紀錄」與「器材庫存管理」權限：
+                </p>
+
+                <div>
+                    <label class="block text-xs text-zinc-400 mb-1.5">驗證密碼</label>
+                    <input type="password" id="admin-password-input" required placeholder="請輸入密碼..." autocomplete="off"
+                        class="w-full px-3.5 py-2.5 bg-[#0B0D12] border border-zinc-700 focus:border-amber-500 rounded-xl text-sm text-white font-mono tracking-widest outline-none">
+                    <p id="admin-login-error" class="hidden text-xs text-red-400 mt-1.5">
+                        ⚠️ 密碼錯誤，請重新輸入！
+                    </p>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeAdminLoginModal()" class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium cursor-pointer">取消</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold shadow-md cursor-pointer">🔓 解鎖管理權限</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== 歸還配件點交確認彈窗 ==================== -->
+    <div id="return-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-[#131720] border border-zinc-700 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-zinc-800 bg-[#0B0D12] flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm sm:text-base font-bold text-white">📦 歸還器材與隨附配件點交</h3>
+                    <p class="text-[11px] text-zinc-400" id="return-modal-subtitle">確認所有器材與配件齊全無損後補回庫存</p>
+                </div>
+                <button type="button" onclick="closeReturnModal()" class="p-1.5 rounded-lg text-zinc-400 hover:text-white cursor-pointer">✕</button>
+            </div>
+            <div class="p-4 sm:p-5 overflow-y-auto space-y-4">
+                <div id="return-checklist-container" class="space-y-3"></div>
+                <div class="flex items-center justify-between gap-2 pt-3 border-t border-zinc-800">
+                    <button type="button" onclick="checkAllReturnBoxes()" class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium whitespace-nowrap cursor-pointer">
+                        ☑️ 全選配件
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="closeReturnModal()" class="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium whitespace-nowrap cursor-pointer">取消</button>
+                        <button type="button" onclick="confirmReturnSubmit()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold shadow-lg shadow-emerald-500/20 whitespace-nowrap cursor-pointer">
+                            ✅ 確認點交完畢並歸還入庫
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 器材庫存與隨附配件編輯彈窗 ==================== -->
+    <div id="gear-editor-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-[#131720] border border-zinc-700 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-zinc-800 bg-[#0B0D12] flex items-center justify-between">
+                <div>
+                    <h3 id="editor-modal-title" class="text-sm sm:text-base font-bold text-white">編輯器材與隨附配件</h3>
+                    <p class="text-[11px] text-zinc-400">設定器材分類、名稱、總庫存數量與點交配件清單</p>
+                </div>
+                <button type="button" onclick="closeGearEditorModal()" class="p-1.5 rounded-lg text-zinc-400 hover:text-white cursor-pointer">✕</button>
+            </div>
+
+            <form id="gear-editor-form" onsubmit="saveGearEditor(event)" class="p-4 sm:p-5 overflow-y-auto space-y-4">
+                <input type="hidden" id="edit-gear-id">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">器材分類 <span class="text-amber-500">*</span></label>
+                        <select id="edit-gear-category" required class="w-full px-3 py-2 bg-[#0B0D12] border border-zinc-800 focus:border-amber-500 rounded-xl text-sm text-white outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-zinc-400 mb-1">總庫存數量 <span class="text-amber-500">*</span></label>
+                        <input type="number" id="edit-gear-total" required min="1" max="99" class="w-full px-3 py-2 bg-[#0B0D12] border border-zinc-800 focus:border-amber-500 rounded-xl text-sm text-white font-mono outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-zinc-400 mb-1">器材名稱 / 型號 <span class="text-amber-500">*</span></label>
+                    <input type="text" id="edit-gear-name" required placeholder="例如：SONY FX30" class="w-full px-3 py-2 bg-[#0B0D12] border border-zinc-800 focus:border-amber-500 rounded-xl text-sm text-white outline-none">
+                </div>
+
+                <!-- 隨附內容物管理 -->
+                <div class="pt-2 border-t border-zinc-800 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-semibold text-amber-400">📦 隨附配件 / 點交內容物清單</label>
+                        <span id="editor-contents-count" class="text-[11px] text-zinc-400">0 項配件</span>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <input type="text" id="new-content-input" onkeydown="handleNewContentKeydown(event)" placeholder="輸入配件名稱，例如：NP-FZ100 電池 x2..." class="flex-1 min-w-0 px-3 py-2 bg-[#0B0D12] border border-zinc-800 focus:border-amber-500 rounded-xl text-xs text-white outline-none">
+                        <button type="button" onclick="addContentTag()" class="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-zinc-700 rounded-xl text-xs font-bold shrink-0 whitespace-nowrap cursor-pointer">
+                            + 新增
+                        </button>
+                    </div>
+
+                    <div id="editor-contents-list" class="flex flex-wrap gap-2 p-3 bg-[#0B0D12] border border-zinc-800 rounded-xl min-h-[72px]"></div>
+                </div>
+
+                <div class="flex items-center justify-between gap-2 pt-4 border-t border-zinc-800">
+                    <button type="button" id="delete-gear-btn" onclick="deleteCurrentEditingGear()" class="px-3 py-2 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 text-xs font-medium whitespace-nowrap cursor-pointer">
+                        🗑️ 刪除器材
+                    </button>
+                    <div class="flex items-center gap-2 ml-auto">
+                        <button type="button" onclick="closeGearEditorModal()" class="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium whitespace-nowrap cursor-pointer">取消</button>
+                        <button type="submit" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold whitespace-nowrap cursor-pointer">儲存變更</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== 自訂確認對話框 ==================== -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#131720] border border-zinc-700 rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4">
+            <h3 id="confirm-title" class="text-base font-bold text-amber-400">確認操作</h3>
+            <p id="confirm-message" class="text-sm text-zinc-300 leading-relaxed"></p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closeConfirmModal()" class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium cursor-pointer">取消</button>
+                <button id="confirm-action-btn" type="button" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold cursor-pointer">確定執行</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== Toast 訊息提示框 ==================== -->
+    <div id="toast-container" class="fixed top-20 right-4 left-4 sm:left-auto z-50 flex flex-col items-end gap-2 pointer-events-none"></div>
+
+    <!-- 隱藏複製輔助文字框 -->
+    <textarea id="clipboard-helper" class="fixed -top-96 left-0 opacity-0 pointer-events-none"></textarea>
+
+    <script>
+        // ==========================================
+        // ★ 內建 Formspree 雲端表單接收端點 ★
+        // ==========================================
+        const FORMSPREE_ENDPOINT = "https://formspree.io/f/xjywagqv";
+
+        // ==========================================
+        // 1. 完整 31 項影視器材資料庫 (9 大分類、免租金點交制)
+        // ==========================================
+        const DEFAULT_EQUIPMENT = [
+            // 1. 機身 (4項)
+            { id: 'eq-01', category: '機身', name: 'SONY FX30', totalQty: 1, rentedQty: 0, accessories: ['原裝電池 NP-FZ100 x2', '雙槽充電器', '機身蓋', '專屬兔籠', '收納硬殼包'] },
+            { id: 'eq-02', category: '機身', name: 'Canon R10', totalQty: 1, rentedQty: 0, accessories: ['LP-E17 電池 x2', '原裝充電器', '相機背帶', '機身蓋'] },
+            { id: 'eq-03', category: '機身', name: 'DJI Pocket4P', totalQty: 1, rentedQty: 0, accessories: ['全能手把', '保護殼', 'Type-C 充電線', '廣角增廣鏡'] },
+            { id: 'eq-04', category: '機身', name: 'DJI FLIP(含RC2遙控器)', totalQty: 1, rentedQty: 0, accessories: ['RC2 帶屏遙控器', '智能飛行電池 x2', '雙向充電管家', '備用螺旋槳一組', '單肩收納包'] },
+
+            // 2. 鏡頭 (5項)
+            { id: 'eq-05', category: '鏡頭', name: 'Canon RF 18-150', totalQty: 1, rentedQty: 0, accessories: ['前後鏡頭蓋', 'UV 保護鏡', '遮光罩'] },
+            { id: 'eq-06', category: '鏡頭', name: 'Canon EF70-200F4', totalQty: 1, rentedQty: 0, accessories: ['前後鏡頭蓋', '原廠遮光罩', '腳架環', '鏡頭軟袋'] },
+            { id: 'eq-07', category: '鏡頭', name: 'Canon EF 50 F1.8', totalQty: 1, rentedQty: 0, accessories: ['前後鏡頭蓋', 'UV 保護鏡'] },
+            { id: 'eq-08', category: '鏡頭', name: 'SONY FE 24-105 F4 G', totalQty: 1, rentedQty: 0, accessories: ['前後鏡頭蓋', '原廠遮光罩', 'UV 保護鏡', '鏡頭收納袋'] },
+            { id: 'eq-09', category: '鏡頭', name: 'Tamaron FE 70-300', totalQty: 1, rentedQty: 0, accessories: ['前後鏡頭蓋', '原廠遮光罩', 'UV 保護鏡'] },
+
+            // 3. 閃光燈&燈光 (4項)
+            { id: 'eq-10', category: '閃光燈&燈光', name: 'Godax V1 pro Canon', totalQty: 1, rentedQty: 0, accessories: ['VB30 鋰電池', '充電器與線材', '外掛副閃燈頭', '迷你底座', '收納包'] },
+            { id: 'eq-11', category: '閃光燈&燈光', name: 'Godax V860iii SONY', totalQty: 1, rentedQty: 0, accessories: ['VB26 鋰電池', '充電器', '迷你底座', '保護套'] },
+            { id: 'eq-12', category: '閃光燈&燈光', name: 'ULANZI L024 40W RGB', totalQty: 2, rentedQty: 0, accessories: ['原廠變壓器', '迷你柔光罩', '手持握把', '收納箱'] },
+            { id: 'eq-13', category: '閃光燈&燈光', name: 'ULANZI LT026 100W', totalQty: 1, rentedQty: 0, accessories: ['標準反光罩', 'AC 電源供應器', '保護蓋', '手提收納包'] },
+
+            // 4. 腳架&燈架 (4項)
+            { id: 'eq-14', category: '腳架&燈架', name: 'ULANZI MT60', totalQty: 1, rentedQty: 0, accessories: ['球型雲台', '快拆板', '原廠收納袋'] },
+            { id: 'eq-15', category: '腳架&燈架', name: 'SONY VCT-60AV', totalQty: 1, rentedQty: 0, accessories: ['線控手把', '快拆板', '攜行袋'] },
+            { id: 'eq-16', category: '腳架&燈架', name: 'ULANZI TT43', totalQty: 4, rentedQty: 0, accessories: ['1/4 轉接頭', '收納束口袋'] },
+            { id: 'eq-17', category: '腳架&燈架', name: 'ULANZI TT43ii', totalQty: 1, rentedQty: 0, accessories: ['快拆轉接座', '收納袋'] },
+
+            // 5. 收音設備 (4項)
+            { id: 'eq-18', category: '收音設備', name: 'SONY ECM-M1', totalQty: 1, rentedQty: 0, accessories: ['防風毛罩', '熱靴保護蓋', '專屬收納袋'] },
+            { id: 'eq-19', category: '收音設備', name: 'RODE Video Mic NTG', totalQty: 1, rentedQty: 0, accessories: ['SM7-R 防震架', '防風海綿', '3.5mm TRS 螺旋線', 'USB-C 充電線'] },
+            { id: 'eq-20', category: '收音設備', name: 'SAMSON C02 (一組)', totalQty: 1, rentedQty: 0, accessories: ['電容麥克風 x2', '避震麥克風夾 x2', '防風海綿 x2', '手提硬殼箱'] },
+            { id: 'eq-21', category: '收音設備', name: 'DJI mic mini (一組)', totalQty: 1, rentedQty: 0, accessories: ['發射器 x2', '接收器 x1', '充電盒', '防風毛罩 x2', '手機轉接頭與音訊線'] },
+
+            // 6. 穩定設備 (1項)
+            { id: 'eq-22', category: '穩定設備', name: 'DJI RS3', totalQty: 1, rentedQty: 0, accessories: ['BG21 電池手把', '雙層快拆板', '鏡頭固定支架', '迷你三腳架', '快門控制線組', '收納箱'] },
+
+            // 7. 通訊設備 (3項)
+            { id: 'eq-23', category: '通訊設備', name: 'BAOFENG UV5R', totalQty: 3, rentedQty: 0, accessories: ['高增益天線', '鋰電池', '座充變壓器', '背夾', '耳掛式耳機麥克風'] },
+            { id: 'eq-24', category: '通訊設備', name: 'AnyTalk FRS-923', totalQty: 2, rentedQty: 0, accessories: ['專用電池', '充電線', '背夾', '耳麥'] },
+            { id: 'eq-25', category: '通訊設備', name: 'Moma intercom SE青春版一對三(一組)', totalQty: 1, rentedQty: 0, accessories: ['主機頭戴耳麥 x1', '子機頭戴耳麥 x2', '可替換電池 x6', '多槽充電座', '硬殼收納箱'] },
+
+            // 8. 麥克風線 (2項)
+            { id: 'eq-26', category: '麥克風線', name: 'LINDY XLR 麥克風線 10M', totalQty: 1, rentedQty: 0, accessories: ['接頭保護套', '魔鬼氈束線帶'] },
+            { id: 'eq-27', category: '麥克風線', name: '日本 CANARE L-4E6S 麥克風線 10M', totalQty: 1, rentedQty: 0, accessories: ['Neutrik 鍍金接頭保護套', '魔鬼氈束線帶'] },
+
+            // 9. 其他 (4項，合計 31 項 / 38 件)
+            { id: 'eq-28', category: '其他', name: '黑色背景布 150*200cm', totalQty: 1, rentedQty: 0, accessories: ['大力夾 x4', '摺疊收納袋'] },
+            { id: 'eq-29', category: '其他', name: 'Godox GM55 monitor', totalQty: 1, rentedQty: 0, accessories: ['遮光罩', '冷靴雲台支架', 'HDMI 線材', 'NP-F550 電池 x2 與充電器', '硬殼包'] },
+            { id: 'eq-30', category: '其他', name: 'Smallrig 4064 V掛電池背板 Arca底座', totalQty: 1, rentedQty: 0, accessories: ['15mm 雙管夾', '內六角板手'] },
+            { id: 'eq-31', category: '其他', name: 'Smallrig VB99 V掛電池', totalQty: 1, rentedQty: 0, accessories: ['Type-C 快充線', '接口防塵塞'] }
+        ];
+
+        const CATEGORIES = [
+            { id: '全部', label: '全部器材' },
+            { id: '機身', label: '機身' },
+            { id: '鏡頭', label: '鏡頭' },
+            { id: '閃光燈&燈光', label: '閃光燈&燈光' },
+            { id: '腳架&燈架', label: '腳架&燈架' },
+            { id: '收音設備', label: '收音設備' },
+            { id: '穩定設備', label: '穩定設備' },
+            { id: '通訊設備', label: '通訊設備' },
+            { id: '麥克風線', label: '麥克風線' },
+            { id: '其他', label: '其他' }
+        ];
+
+        // ==========================================
+        // 2. 安全儲存封裝
+        // ==========================================
+        const memoryFallback = {};
+
+        function safeStorageGet(key) {
+            try {
+                if (window.localStorage) {
+                    const val = window.localStorage.getItem(key);
+                    if (val !== null) return val;
+                }
+            } catch (e) {}
+            return Object.prototype.hasOwnProperty.call(memoryFallback, key) ? memoryFallback[key] : null;
+        }
+
+        function safeStorageSet(key, value) {
+            memoryFallback[key] = value;
+            try {
+                if (window.localStorage) {
+                    window.localStorage.setItem(key, value);
+                }
+            } catch (e) {}
+        }
+
+        // ==========================================
+        // 3. 應用程式狀態與初始化
+        // ==========================================
+        const STORAGE_KEYS = {
+            INVENTORY: 'kenny_gear_fs_v2_items',
+            RECORDS: 'kenny_gear_fs_v2_records',
+            ADMIN_PWD: 'kenny_gear_fs_v2_pwd'
+        };
+
+        let inventory = [];
+        let rentalRecords = [];
+        let cart = {};
+        let cardQtySelection = {};
+        let editingContents = [];
+
+        let isAdminUnlocked = false;
+        let adminPassword = '8888';
+        let pendingAdminAction = null;
+        let secretTapCount = 0;
+        let secretTapTimer = null;
+
+        let currentCategory = '全部';
+        let searchQuery = '';
+        let recordFilter = 'borrowed';
+        let currentReturningRecordId = null;
+
+        // 全域日期狀態 (預設今天借出、明天歸還)
+        let selectedStartDate = '';
+        let selectedEndDate = '';
+
+        function cloneDefaultEquipment() {
+            return DEFAULT_EQUIPMENT.map(item => ({
+                id: item.id,
+                category: item.category,
+                name: item.name,
+                totalQty: item.totalQty,
+                rentedQty: 0,
+                accessories: [...item.accessories]
+            }));
+        }
+
+        function saveState() {
+            safeStorageSet(STORAGE_KEYS.INVENTORY, JSON.stringify(inventory));
+            safeStorageSet(STORAGE_KEYS.RECORDS, JSON.stringify(rentalRecords));
+        }
+
+        function initApp() {
+            let loadedInv = null;
+            try {
+                const rawInv = safeStorageGet(STORAGE_KEYS.INVENTORY);
+                if (rawInv) {
+                    const parsed = JSON.parse(rawInv);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        loadedInv = parsed.map((item, idx) => ({
+                            id: item.id || ('eq-' + idx),
+                            category: item.category || '其他',
+                            name: item.name || '未命名器材',
+                            totalQty: Math.max(1, Number(item.totalQty ?? 1)),
+                            rentedQty: Math.max(0, Number(item.rentedQty ?? 0)),
+                            accessories: Array.isArray(item.accessories) ? item.accessories : []
+                        }));
+                    }
+                }
+            } catch (err) {
+                loadedInv = null;
+            }
+
+            if (!Array.isArray(loadedInv) || loadedInv.length === 0) {
+                inventory = cloneDefaultEquipment();
+                saveState();
+            } else {
+                inventory = loadedInv;
+            }
+
+            try {
+                const rawRec = safeStorageGet(STORAGE_KEYS.RECORDS);
+                rentalRecords = rawRec ? JSON.parse(rawRec) : [];
+                if (!Array.isArray(rentalRecords)) rentalRecords = [];
+            } catch (err) {
+                rentalRecords = [];
+            }
+
+            const savedPwd = safeStorageGet(STORAGE_KEYS.ADMIN_PWD);
+            if (savedPwd && String(savedPwd).trim().length >= 4) {
+                adminPassword = String(savedPwd).trim();
+            }
+
+            inventory.forEach(item => {
+                cardQtySelection[item.id] = 1;
+            });
+
+            // 初始化日期 (今天起租、明天歸還)
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            selectedStartDate = formatDateInput(today);
+            selectedEndDate = formatDateInput(tomorrow);
+            syncAllDateUI();
+
+            const catSelect = document.getElementById('edit-gear-category');
+            if (catSelect) {
+                catSelect.innerHTML = CATEGORIES.filter(c => c.id !== '全部')
+                    .map(c => `<option value="${c.id}">${c.label}</option>`)
+                    .join('');
+            }
+
+            updateAdminUI();
+            renderCategoryTabs();
+            renderCatalog();
+            renderCart();
+            renderRecords();
+            renderManageTable();
+            updateStats();
+        }
+
+        // ==========================================
+        // 4. 雙向同步日期選擇器與快速天數邏輯
+        // ==========================================
+        function formatDateInput(dateObj) {
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function parseLocalDate(dateStr) {
+            if (!dateStr) return new Date();
+            const parts = dateStr.split('-').map(Number);
+            return new Date(parts[0], parts[1] - 1, parts[2]);
+        }
+
+        function getWeekdayLabel(dateStr) {
+            if (!dateStr) return '';
+            const days = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
+            const d = parseLocalDate(dateStr);
+            return days[d.getDay()] || '';
+        }
+
+        function getRentalDays() {
+            if (!selectedStartDate || !selectedEndDate) return 1;
+            const d1 = parseLocalDate(selectedStartDate);
+            const d2 = parseLocalDate(selectedEndDate);
+            const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+            // 當天借當天還算 1 天，隔天還算 2 天 (或依夜數計算：diff === 0 ? 1 : diff + 1)
+            return diff <= 0 ? 1 : diff + 1;
+        }
+
+        function handleDateInputChange(source, field) {
+            const startEl = document.getElementById(source === 'top' ? 'top-rent-start' : 'rent-start');
+            const endEl = document.getElementById(source === 'top' ? 'top-rent-end' : 'rent-end');
+            if (!startEl || !endEl) return;
+
+            if (field === 'start') {
+                selectedStartDate = startEl.value;
+                // 若歸還日期早於借出日期，自動將歸還日期順延至借出日期同一天
+                if (selectedEndDate < selectedStartDate) {
+                    selectedEndDate = selectedStartDate;
+                }
+            } else {
+                selectedEndDate = endEl.value;
+                if (selectedEndDate < selectedStartDate) {
+                    selectedEndDate = selectedStartDate;
+                    showToast('歸還日期不可早於借出日期，已自動調整', 'info');
+                }
+            }
+
+            syncAllDateUI();
+        }
+
+        function applyQuickDuration(offsetDays) {
+            if (!selectedStartDate) {
+                selectedStartDate = formatDateInput(new Date());
+            }
+            const startObj = parseLocalDate(selectedStartDate);
+            const endObj = new Date(startObj);
+            endObj.setDate(endObj.getDate() + offsetDays);
+            selectedEndDate = formatDateInput(endObj);
+            syncAllDateUI();
+        }
+
+        function syncAllDateUI() {
+            const topStart = document.getElementById('top-rent-start');
+            const topEnd = document.getElementById('top-rent-end');
+            const drawerStart = document.getElementById('rent-start');
+            const drawerEnd = document.getElementById('rent-end');
+
+            if (topStart) topStart.value = selectedStartDate;
+            if (topEnd) {
+                topEnd.min = selectedStartDate;
+                topEnd.value = selectedEndDate;
+            }
+            if (drawerStart) drawerStart.value = selectedStartDate;
+            if (drawerEnd) {
+                drawerEnd.min = selectedStartDate;
+                drawerEnd.value = selectedEndDate;
+            }
+
+            const totalDays = getRentalDays();
+            const topBadge = document.getElementById('top-days-badge');
+            const drawerBadge = document.getElementById('drawer-days-badge');
+            const topStartWd = document.getElementById('top-start-weekday');
+            const topEndWd = document.getElementById('top-end-weekday');
+            const floatingDates = document.getElementById('floating-cart-dates');
+
+            if (topBadge) topBadge.textContent = `共計借用 ${totalDays} 天`;
+            if (drawerBadge) drawerBadge.textContent = `共計借用 ${totalDays} 天`;
+            if (topStartWd) topStartWd.textContent = getWeekdayLabel(selectedStartDate);
+            if (topEndWd) topEndWd.textContent = getWeekdayLabel(selectedEndDate);
+            if (floatingDates) floatingDates.textContent = `📅 ${selectedStartDate} ～ ${selectedEndDate} (共 ${totalDays} 天)`;
+
+            // 高亮對應的快速天數按鈕 (offsetDays = totalDays - 1)
+            const currentOffset = totalDays - 1;
+            document.querySelectorAll('.quick-dur-btn').forEach(btn => {
+                const dur = Number(btn.getAttribute('data-duration'));
+                const isDrawerBtn = btn.closest('#checkout-form') !== null;
+                if (dur === currentOffset) {
+                    btn.className = isDrawerBtn
+                        ? 'quick-dur-btn py-1.5 px-1 rounded-lg text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/50 transition-colors cursor-pointer text-center'
+                        : 'quick-dur-btn px-2.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/50 transition-colors cursor-pointer whitespace-nowrap';
+                } else {
+                    btn.className = isDrawerBtn
+                        ? 'quick-dur-btn py-1.5 px-1 rounded-lg text-[11px] font-semibold bg-[#131720] text-zinc-300 border border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer text-center'
+                        : 'quick-dur-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-[#0B0D12] hover:bg-amber-500/15 text-zinc-300 hover:text-amber-300 border border-zinc-700/90 transition-colors cursor-pointer whitespace-nowrap';
+                }
+            });
+        }
+
+        // ==========================================
+        // 5. 隱密管理員入口與驗證邏輯 (連點 Logo 5 次或 Ctrl+Shift+A)
+        // ==========================================
+        function handleSecretBrandTap() {
+            if (isAdminUnlocked) return;
+            secretTapCount += 1;
+            if (secretTapTimer) clearTimeout(secretTapTimer);
+
+            if (secretTapCount >= 5) {
+                secretTapCount = 0;
+                openAdminLoginModal(null);
+                return;
+            }
+
+            secretTapTimer = setTimeout(() => {
+                secretTapCount = 0;
+            }, 2000);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+                e.preventDefault();
+                if (!isAdminUnlocked) {
+                    openAdminLoginModal(null);
+                }
+            }
+        });
+
+        function updateAdminUI() {
+            const lockBtn = document.getElementById('admin-lock-btn');
+            const lockIcon = document.getElementById('admin-lock-icon');
+            const lockText = document.getElementById('admin-lock-text');
+            const navGrid = document.getElementById('main-nav-grid');
+            const navManage = document.getElementById('nav-manage');
+
+            if (isAdminUnlocked) {
+                if (lockBtn) {
+                    lockBtn.className = 'px-2.5 py-2 sm:px-3.5 sm:py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/50 text-emerald-400 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer';
+                }
+                if (lockIcon) lockIcon.textContent = '🔓';
+                if (lockText) {
+                    lockText.textContent = '管理員已解鎖';
+                    lockText.classList.remove('hidden');
+                }
+                if (navGrid) {
+                    navGrid.classList.remove('grid-cols-2');
+                    navGrid.classList.add('grid-cols-3');
+                }
+                if (navManage) navManage.classList.remove('hidden');
+            } else {
+                if (lockBtn) {
+                    lockBtn.className = 'px-2.5 py-2 sm:px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer';
+                }
+                if (lockIcon) lockIcon.textContent = '🔒';
+                if (lockText) {
+                    lockText.textContent = '管理員鎖定';
+                    lockText.className = 'hidden sm:inline text-xs font-medium';
+                }
+                if (navGrid) {
+                    navGrid.classList.remove('grid-cols-3');
+                    navGrid.classList.add('grid-cols-2');
+                }
+                if (navManage) navManage.classList.add('hidden');
+            }
+        }
+
+        function handleAdminLockClick() {
+            if (isAdminUnlocked) {
+                isAdminUnlocked = false;
+                updateAdminUI();
+                const manageView = document.getElementById('view-manage');
+                if (manageView && !manageView.classList.contains('hidden')) {
+                    switchTab('catalog');
+                } else {
+                    renderCatalog();
+                    renderRecords();
+                }
+                showToast('已重新上鎖並隱藏管理介面', 'info');
+            } else {
+                openAdminLoginModal(null);
+            }
+        }
+
+        function openAdminLoginModal(callback) {
+            pendingAdminAction = callback || null;
+            const modal = document.getElementById('admin-login-modal');
+            const input = document.getElementById('admin-password-input');
+            const errEl = document.getElementById('admin-login-error');
+
+            if (input) input.value = '';
+            if (errEl) errEl.classList.add('hidden');
+            if (modal) modal.classList.remove('hidden');
+
+            setTimeout(() => { if (input) input.focus(); }, 60);
+        }
+
+        function closeAdminLoginModal() {
+            const modal = document.getElementById('admin-login-modal');
+            if (modal) modal.classList.add('hidden');
+            pendingAdminAction = null;
+        }
+
+        function submitAdminLogin(event) {
+            event.preventDefault();
+            const input = document.getElementById('admin-password-input');
+            const errEl = document.getElementById('admin-login-error');
+            const entered = (input ? input.value : '').trim();
+
+            if (entered === adminPassword) {
+                isAdminUnlocked = true;
+                const cb = pendingAdminAction;
+                closeAdminLoginModal();
+                updateAdminUI();
+                renderCatalog();
+                renderRecords();
+                renderManageTable();
+                showToast('🔓 管理員驗證成功！已解鎖點交歸還與器材管理權限', 'success');
+                if (typeof cb === 'function') cb();
+            } else {
+                if (errEl) errEl.classList.remove('hidden');
+                if (input) {
+                    input.value = '';
+                    input.focus();
+                }
+            }
+        }
+
+        function handleChangeAdminPassword(event) {
+            event.preventDefault();
+            if (!isAdminUnlocked) {
+                openAdminLoginModal(null);
+                return;
+            }
+            const input = document.getElementById('new-admin-password');
+            const newPwd = (input ? input.value : '').trim();
+            if (newPwd.length < 4) {
+                showToast('新密碼至少需要 4 個字元', 'error');
+                return;
+            }
+            adminPassword = newPwd;
+            safeStorageSet(STORAGE_KEYS.ADMIN_PWD, adminPassword);
+            input.value = '';
+            showToast('管理員密碼已成功更新！', 'success');
+        }
+
+        function switchTab(tabName) {
+            if (tabName === 'manage' && !isAdminUnlocked) {
+                openAdminLoginModal(() => switchTab('manage'));
+                return;
+            }
+
+            const views = {
+                catalog: document.getElementById('view-catalog'),
+                records: document.getElementById('view-records'),
+                manage: document.getElementById('view-manage')
+            };
+            const navs = {
+                catalog: document.getElementById('nav-catalog'),
+                records: document.getElementById('nav-records'),
+                manage: document.getElementById('nav-manage')
+            };
+
+            const activeCls = 'py-2 px-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-amber-500 text-zinc-950 shadow-sm flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer';
+            const inactiveCls = 'py-2 px-2 rounded-lg text-xs sm:text-sm font-medium transition-all text-zinc-400 hover:text-zinc-100 flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer';
+
+            Object.keys(views).forEach(k => {
+                if (views[k]) {
+                    if (k === tabName) views[k].classList.remove('hidden');
+                    else views[k].classList.add('hidden');
+                }
+                if (navs[k]) {
+                    navs[k].className = (k === tabName) ? activeCls : inactiveCls;
+                }
+            });
+
+            if (tabName === 'records') renderRecords();
+            if (tabName === 'manage') renderManageTable();
+        }
+
+        // ==========================================
+        // 6. 分類標籤與器材卡片渲染
+        // ==========================================
+        function selectCategory(catId) {
+            currentCategory = catId;
+            renderCategoryTabs();
+            renderCatalog();
+        }
+
+        function handleSearch(val) {
+            searchQuery = val.trim().toLowerCase();
+            const clearBtn = document.getElementById('clear-search-btn');
+            if (clearBtn) {
+                if (searchQuery.length > 0) clearBtn.classList.remove('hidden');
+                else clearBtn.classList.add('hidden');
+            }
+            renderCatalog();
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('search-input');
+            if (input) input.value = '';
+            handleSearch('');
+        }
+
+        function resetFilters() {
+            currentCategory = '全部';
+            const availBox = document.getElementById('filter-available-only');
+            if (availBox) availBox.checked = false;
+            clearSearch();
+            renderCategoryTabs();
+            renderCatalog();
+        }
+
+        function renderCategoryTabs() {
+            const container = document.getElementById('category-tabs');
+            if (!container) return;
+
+            container.innerHTML = CATEGORIES.map(cat => {
+                const isActive = currentCategory === cat.id;
+                const count = cat.id === '全部'
+                    ? inventory.length
+                    : inventory.filter(i => i.category === cat.id).length;
+
+                return `
+                    <button type="button" onclick="selectCategory('${cat.id}')" 
+                        class="shrink-0 whitespace-nowrap px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 border cursor-pointer ${
+                            isActive
+                            ? 'bg-amber-500 text-zinc-950 border-amber-400 font-bold shadow-md shadow-amber-500/15'
+                            : 'bg-[#131720] text-zinc-300 border-zinc-800 hover:border-zinc-700 hover:bg-[#1C222E]'
+                        }">
+                        <span>${cat.label}</span>
+                        <span class="text-[11px] px-1.5 py-0.5 rounded-md font-mono ${
+                            isActive ? 'bg-black/20 text-zinc-950' : 'bg-zinc-800 text-zinc-400'
+                        }">${count}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderCatalog() {
+            const grid = document.getElementById('equipment-grid');
+            const emptyState = document.getElementById('empty-state');
+            const availBox = document.getElementById('filter-available-only');
+            const availableOnly = availBox ? availBox.checked : false;
+            if (!grid) return;
+
+            const filtered = inventory.filter(item => {
+                const avail = item.totalQty - item.rentedQty;
+                const matchCat = currentCategory === '全部' || item.category === currentCategory;
+                const matchAvail = !availableOnly || avail > 0;
+                const accStr = (item.accessories || []).join(' ').toLowerCase();
+                const matchSearch = !searchQuery
+                    || item.name.toLowerCase().includes(searchQuery)
+                    || item.category.toLowerCase().includes(searchQuery)
+                    || accStr.includes(searchQuery);
+                return matchCat && matchAvail && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                if (emptyState) emptyState.classList.remove('hidden');
+                return;
+            }
+
+            if (emptyState) emptyState.classList.add('hidden');
+
+            grid.innerHTML = filtered.map(item => {
+                const avail = Math.max(0, item.totalQty - item.rentedQty);
+                const inCartQty = cart[item.id] || 0;
+                const remainingCanAdd = avail - inCartQty;
+                let selectedQty = cardQtySelection[item.id] || 1;
+                if (remainingCanAdd > 0 && selectedQty > remainingCanAdd) {
+                    selectedQty = remainingCanAdd;
+                    cardQtySelection[item.id] = selectedQty;
+                } else if (remainingCanAdd <= 0) {
+                    selectedQty = 0;
+                }
+
+                let badgeHtml = '';
+                if (avail === 0) {
+                    badgeHtml = `<span class="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-red-500/15 text-red-400 border border-red-500/30 whitespace-nowrap shrink-0">已全數借出 (0/${item.totalQty})</span>`;
+                } else if (item.rentedQty > 0) {
+                    badgeHtml = `<span class="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30 whitespace-nowrap shrink-0">可借 ${avail} / 總數 ${item.totalQty}</span>`;
+                } else {
+                    badgeHtml = `<span class="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 whitespace-nowrap shrink-0">可借 ${avail} / 總數 ${item.totalQty}</span>`;
+                }
+
+                return `
+                    <div class="gear-card p-4 flex flex-col justify-between ${avail === 0 ? 'opacity-70' : ''}">
+                        <div>
+                            <!-- 頂部：分類標籤、管理員編輯與庫存狀態 -->
+                            <div class="flex items-center justify-between gap-2 mb-2.5">
+                                <div class="flex items-center gap-1.5 min-w-0">
+                                    <span class="text-[11px] font-medium px-2.5 py-0.5 rounded-md bg-zinc-800 text-zinc-300 border border-zinc-700/80 whitespace-nowrap">
+                                        ${item.category}
+                                    </span>
+                                    ${isAdminUnlocked ? `
+                                        <button type="button" onclick="openGearEditorModal('${item.id}')" class="px-2 py-0.5 rounded-md text-[11px] text-amber-400 hover:text-zinc-950 bg-amber-500/15 hover:bg-amber-500 border border-amber-500/40 transition-colors whitespace-nowrap shrink-0 cursor-pointer">
+                                            ✏️ 編輯
+                                        </button>
+                                    ` : ''}
+                                </div>
+                                ${badgeHtml}
+                            </div>
+
+                            <!-- 器材名稱 -->
+                            <div class="mb-3">
+                                <h3 class="text-base font-bold text-white leading-snug break-words">
+                                    ${item.name}
+                                </h3>
+                            </div>
+
+                            <!-- 隨附配件點交清單 -->
+                            <div class="mb-3 bg-[#0B0D12] p-2.5 rounded-xl border border-zinc-800/80">
+                                <div class="text-[11px] text-zinc-400 mb-1.5 flex items-center justify-between">
+                                    <span>📦 隨附配件 / 點交清單</span>
+                                    <span class="text-[10px] text-zinc-500 font-mono">${item.accessories ? item.accessories.length : 0} 項</span>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${item.accessories && item.accessories.length > 0
+                                        ? item.accessories.map(acc => `<span class="text-[11px] px-2 py-0.5 rounded-md bg-[#131720] text-zinc-300 border border-zinc-800">${acc}</span>`).join('')
+                                        : `<span class="text-[11px] text-zinc-600 italic">僅主機本體</span>`
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 底部數量選擇與加入借用清單按鈕 -->
+                        <div class="space-y-2.5 pt-3 border-t border-zinc-800/80">
+                            ${inCartQty > 0 ? `
+                                <div class="text-[11px] text-amber-400 bg-amber-500/10 border border-amber-500/25 rounded-lg px-2.5 py-1 flex items-center justify-between">
+                                    <span>已加入借用清單</span>
+                                    <span class="font-bold font-mono">${inCartQty} 件</span>
+                                </div>
+                            ` : ''}
+
+                            <div class="flex items-center gap-2 pt-0.5">
+                                <div class="flex items-center bg-[#0B0D12] border border-zinc-800 rounded-xl p-1 shrink-0 ${remainingCanAdd <= 0 ? 'opacity-40 pointer-events-none' : ''}">
+                                    <button type="button" onclick="adjustCardQty('${item.id}', -1)" class="w-8 h-8 rounded-lg hover:bg-zinc-800 text-zinc-300 font-bold flex items-center justify-center cursor-pointer">-</button>
+                                    <span class="w-7 text-center text-xs font-bold text-white font-mono">${selectedQty}</span>
+                                    <button type="button" onclick="adjustCardQty('${item.id}', 1)" class="w-8 h-8 rounded-lg hover:bg-zinc-800 text-zinc-300 font-bold flex items-center justify-center cursor-pointer">+</button>
+                                </div>
+
+                                <button type="button" onclick="addToCart('${item.id}')" 
+                                    ${remainingCanAdd <= 0 ? 'disabled' : ''}
+                                    class="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 whitespace-nowrap ${
+                                        remainingCanAdd <= 0
+                                        ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                                        : 'bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-sm active:scale-95 cursor-pointer'
+                                    }">
+                                    <span>${avail === 0 ? '暫無庫存' : (remainingCanAdd <= 0 ? '已達上限' : '+ 加入借用清單')}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function adjustCardQty(itemId, delta) {
+            const item = inventory.find(i => i.id === itemId);
+            if (!item) return;
+            const avail = item.totalQty - item.rentedQty;
+            const inCartQty = cart[itemId] || 0;
+            const maxAdd = avail - inCartQty;
+            if (maxAdd <= 0) return;
+
+            let cur = (cardQtySelection[itemId] || 1) + delta;
+            if (cur < 1) cur = 1;
+            if (cur > maxAdd) cur = maxAdd;
+            cardQtySelection[itemId] = cur;
+            renderCatalog();
+        }
+
+        // ==========================================
+        // 7. 借用清單與 Formspree 送出申請
+        // ==========================================
+        function toggleCartDrawer(open) {
+            const drawer = document.getElementById('cart-drawer');
+            const overlay = document.getElementById('cart-overlay');
+            if (!drawer || !overlay) return;
+
+            if (open) {
+                overlay.classList.remove('hidden');
+                drawer.classList.remove('translate-x-full');
+                syncAllDateUI();
+                renderCart();
+            } else {
+                drawer.classList.add('translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function addToCart(itemId) {
+            const item = inventory.find(i => i.id === itemId);
+            if (!item) return;
+
+            const avail = item.totalQty - item.rentedQty;
+            const inCartQty = cart[itemId] || 0;
+            const addQty = cardQtySelection[itemId] || 1;
+            if (inCartQty + addQty > avail) {
+                showToast('超過目前可借庫存數量！', 'error');
+                return;
+            }
+
+            cart[itemId] = inCartQty + addQty;
+            cardQtySelection[itemId] = 1;
+
+            renderCatalog();
+            renderCart();
+            showToast(`已加入借用清單：${item.name} × ${addQty}`, 'success');
+        }
+
+        function updateCartItemQty(itemId, delta) {
+            const item = inventory.find(i => i.id === itemId);
+            if (!item || !cart[itemId]) return;
+
+            const avail = item.totalQty - item.rentedQty;
+            const newQty = cart[itemId] + delta;
+            if (newQty <= 0) {
+                delete cart[itemId];
+            } else if (newQty > avail) {
+                showToast(`「${item.name}」目前僅剩 ${avail} 件可借`, 'error');
+                return;
+            } else {
+                cart[itemId] = newQty;
+            }
+            renderCatalog();
+            renderCart();
+        }
+
+        function removeCartItem(itemId) {
+            delete cart[itemId];
+            renderCatalog();
+            renderCart();
+        }
+
+        function clearCart() {
+            cart = {};
+            renderCatalog();
+            renderCart();
+            showToast('已清空借用清單', 'info');
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const checkoutForm = document.getElementById('checkout-form');
+            const clearBtn = document.getElementById('clear-cart-btn');
+            const badge = document.getElementById('cart-badge');
+            const drawerCount = document.getElementById('drawer-item-count');
+            const floatingBar = document.getElementById('floating-cart-bar');
+            const floatingCount = document.getElementById('floating-cart-count');
+            const floatingSummary = document.getElementById('floating-cart-summary');
+            const summaryPiecesEl = document.getElementById('summary-pieces-display');
+
+            const cartIds = Object.keys(cart);
+            const totalPieces = cartIds.reduce((sum, id) => sum + cart[id], 0);
+
+            if (badge) badge.textContent = totalPieces;
+            if (drawerCount) drawerCount.textContent = `${cartIds.length} 項 / 共 ${totalPieces} 件`;
+            if (summaryPiecesEl) summaryPiecesEl.textContent = `${totalPieces} 件`;
+
+            if (cartIds.length === 0) {
+                if (container) {
+                    container.innerHTML = `
+                        <div class="py-10 text-center bg-[#0B0D12] rounded-xl border border-dashed border-zinc-800">
+                            <div class="text-2xl mb-1.5">📭</div>
+                            <p class="text-xs text-zinc-400">尚未加入任何借用器材</p>
+                            <p class="text-[11px] text-zinc-500 mt-1">請從器材借用清單點擊「+ 加入借用清單」</p>
+                        </div>
+                    `;
+                }
+                if (checkoutForm) checkoutForm.classList.add('hidden');
+                if (clearBtn) clearBtn.classList.add('hidden');
+                if (floatingBar) floatingBar.classList.add('translate-y-full');
+                return;
+            }
+
+            if (checkoutForm) checkoutForm.classList.remove('hidden');
+            if (clearBtn) clearBtn.classList.remove('hidden');
+            if (floatingBar) floatingBar.classList.remove('translate-y-full');
+
+            if (container) {
+                container.innerHTML = cartIds.map(id => {
+                    const item = inventory.find(i => i.id === id);
+                    if (!item) return '';
+                    const qty = cart[id];
+                    const accSummary = item.accessories && item.accessories.length > 0 ? item.accessories.join('、') : '僅主機本體';
+
+                    return `
+                        <div class="bg-[#0B0D12] border border-zinc-800 rounded-xl p-3 space-y-2">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="min-w-0 flex-1">
+                                    <span class="text-[10px] text-amber-400 font-medium">${item.category}</span>
+                                    <h4 class="text-xs sm:text-sm font-bold text-white break-words">${item.name}</h4>
+                                </div>
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <button type="button" onclick="updateCartItemQty('${id}', -1)" class="w-7 h-7 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 flex items-center justify-center cursor-pointer">-</button>
+                                    <span class="w-6 text-center text-xs font-bold font-mono text-white">${qty}</span>
+                                    <button type="button" onclick="updateCartItemQty('${id}', 1)" class="w-7 h-7 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 flex items-center justify-center cursor-pointer">+</button>
+                                    <button type="button" onclick="removeCartItem('${id}')" class="w-7 h-7 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 flex items-center justify-center ml-0.5 cursor-pointer">✕</button>
+                                </div>
+                            </div>
+                            <div class="pt-1.5 border-t border-zinc-900 text-[11px] text-zinc-400">
+                                <span>📦 隨附：${accSummary}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            if (floatingCount) floatingCount.textContent = totalPieces;
+            if (floatingSummary) floatingSummary.textContent = `已選 ${cartIds.length} 項 / 共 ${totalPieces} 件器材`;
+            syncAllDateUI();
+        }
+
+        async function handleCheckout(event) {
+            event.preventDefault();
+            const cartIds = Object.keys(cart);
+            if (cartIds.length === 0) return;
+
+            const borrowerName = document.getElementById('borrower-name').value.trim();
+            const borrowerContact = document.getElementById('borrower-contact').value.trim();
+            const startDate = selectedStartDate;
+            const endDate = selectedEndDate;
+            const note = document.getElementById('rent-note').value.trim();
+            const days = getRentalDays();
+
+            if (!borrowerName || !borrowerContact) {
+                showToast('請完整填寫借用人姓名與聯絡方式', 'error');
+                return;
+            }
+
+            // 檢查庫存
+            for (const id of cartIds) {
+                const item = inventory.find(i => i.id === id);
+                if (!item || (item.totalQty - item.rentedQty) < cart[id]) {
+                    showToast(`「${item ? item.name : id}」庫存不足，請重新確認！`, 'error');
+                    return;
+                }
+            }
+
+            const submitBtn = document.getElementById('submit-borrow-btn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<span>⏳ 正在送出申請給肯尼...</span>`;
+            }
+
+            const orderItems = cartIds.map(id => {
+                const item = inventory.find(i => i.id === id);
+                return {
+                    itemId: item.id,
+                    category: item.category,
+                    name: item.name,
+                    qty: cart[id],
+                    accessories: [...(item.accessories || [])]
+                };
+            });
+
+            const nowStr = new Date().toLocaleString('zh-TW', { hour12: false });
+            const recordId = 'KG-' + Date.now().toString().slice(-6);
+
+            const gearListPlain = orderItems.map((oi, i) => {
+                const accStr = oi.accessories.length > 0 ? `（配件：${oi.accessories.join('、')}）` : '';
+                return `${i + 1}. [${oi.category}] ${oi.name} × ${oi.qty} 件 ${accStr}`;
+            }).join('\n');
+
+            const receiptText = [
+                `【肯尼器材借用區 - 借用申請單】`,
+                `單號：${recordId}`,
+                `送出時間：${nowStr}`,
+                `借用人：${borrowerName}`,
+                `聯絡方式：${borrowerContact}`,
+                `借出日期：${startDate} (${getWeekdayLabel(startDate)})`,
+                `預計歸還日期：${endDate} (${getWeekdayLabel(endDate)})`,
+                `借用天數：共計 ${days} 天`,
+                `--------------------------------`,
+                `【借用器材與隨附配件清單】`,
+                gearListPlain,
+                note ? `--------------------------------\n拍攝用途/備註：${note}` : ''
+            ].filter(Boolean).join('\n');
+
+            // 透過 Formspree 送出資料到管理員信箱與 Formspree 後台
+            let formspreeSuccess = false;
+            try {
+                const res = await fetch(FORMSPREE_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        _subject: `【器材借用申請】${borrowerName}（${startDate} ~ ${endDate}，共 ${days} 天）`,
+                        單號: recordId,
+                        送出時間: nowStr,
+                        借用人姓名: borrowerName,
+                        聯絡方式: borrowerContact,
+                        借出日期: startDate,
+                        預計歸還日期: endDate,
+                        借用天數: `${days} 天`,
+                        借用器材與配件明細: gearListPlain,
+                        備註: note || '無',
+                        完整借用單摘要: receiptText
+                    })
+                });
+                if (res.ok) {
+                    formspreeSuccess = true;
+                }
+            } catch (err) {
+                console.warn('Formspree submit error:', err);
+            }
+
+            // 扣除本機庫存並寫入借用紀錄
+            orderItems.forEach(oi => {
+                const item = inventory.find(i => i.id === oi.itemId);
+                if (item) item.rentedQty += oi.qty;
+            });
+
+            const newRecord = {
+                id: recordId,
+                createdAt: nowStr,
+                borrowerName,
+                borrowerContact,
+                startDate,
+                endDate,
+                days,
+                note,
+                items: orderItems,
+                status: 'borrowed',
+                returnedAt: null,
+                syncedCloud: formspreeSuccess
+            };
+
+            rentalRecords.unshift(newRecord);
+            cart = {};
+            saveState();
+
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<span>確認送出借用申請</span>`;
+            }
+
+            document.getElementById('borrower-name').value = '';
+            document.getElementById('borrower-contact').value = '';
+            document.getElementById('rent-note').value = '';
+
+            toggleCartDrawer(false);
+            renderCatalog();
+            renderCart();
+            renderRecords();
+            renderManageTable();
+            updateStats();
+
+            openReceiptModal(receiptText);
+            if (formspreeSuccess) {
+                showToast('已成功送出借用申請並通知管理員！', 'success');
+            } else {
+                showToast('已建立本機借用單（網路離線，請複製明細傳給管理員）', 'info');
+            }
+        }
+
+        function openReceiptModal(receiptText) {
+            const modal = document.getElementById('receipt-modal');
+            const previewEl = document.getElementById('receipt-text-preview');
+            if (previewEl) previewEl.textContent = receiptText;
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeReceiptModal() {
+            const modal = document.getElementById('receipt-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function copyReceiptText() {
+            const text = document.getElementById('receipt-text-preview')?.textContent || '';
+            copyTextToClipboard(text);
+            showToast('已複製完整借用單明細！', 'success');
+        }
+
+        function copyTextToClipboard(text) {
+            const helper = document.getElementById('clipboard-helper');
+            if (!helper) return;
+            helper.value = text;
+            helper.select();
+            helper.setSelectionRange(0, 99999);
+            try {
+                document.execCommand('copy');
+            } catch (err) {}
+        }
+
+        // ==========================================
+        // 8. 誰借走了（借用紀錄與今日歸還/逾期提醒）
+        // ==========================================
+        function setRecordFilter(filter) {
+            recordFilter = filter;
+            ['borrowed', 'all', 'returned'].forEach(f => {
+                const btn = document.getElementById(`rec-filter-${f}`);
+                if (!btn) return;
+                if (f === filter) {
+                    btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-zinc-950 whitespace-nowrap cursor-pointer';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:text-white whitespace-nowrap cursor-pointer';
+                }
+            });
+            renderRecords();
+        }
+
+        function getReturnDueBadge(endDateStr, isBorrowed) {
+            if (!isBorrowed || !endDateStr) return '';
+            const todayStr = formatDateInput(new Date());
+            if (endDateStr < todayStr) {
+                return `<span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-red-500/20 text-red-400 border border-red-500/40 whitespace-nowrap">⚠️ 已逾期未還</span>`;
+            }
+            if (endDateStr === todayStr) {
+                return `<span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-500/25 text-amber-300 border border-amber-500/50 whitespace-nowrap">⏰ 今日應歸還</span>`;
+            }
+            return '';
+        }
+
+        function renderRecords() {
+            const container = document.getElementById('records-list');
+            const countLabel = document.getElementById('records-count-label');
+            if (!container) return;
+
+            const filtered = rentalRecords.filter(r => {
+                if (recordFilter === 'all') return true;
+                return r.status === recordFilter;
+            });
+
+            if (countLabel) countLabel.textContent = `共 ${filtered.length} 筆`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="py-14 text-center bg-[#131720] rounded-2xl border border-dashed border-zinc-800 space-y-2">
+                        <div class="text-3xl">📋</div>
+                        <p class="text-sm text-zinc-300 font-medium">目前此分類尚無借用紀錄</p>
+                        <p class="text-xs text-zinc-500">若要查看所有裝置線上送出的完整紀錄，可點擊上方「查看所有人的線上填寫回覆 (Formspree)」</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(rec => {
+                const isBorrowed = rec.status === 'borrowed';
+                const totalPieces = rec.items.reduce((s, i) => s + i.qty, 0);
+                const dueBadge = getReturnDueBadge(rec.endDate, isBorrowed);
+
+                return `
+                    <div class="bg-[#131720] border ${isBorrowed ? 'border-amber-500/40' : 'border-zinc-800/80 opacity-85'} rounded-2xl p-4 sm:p-5 space-y-3.5">
+                        <!-- 紀錄標頭 -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-zinc-800/80">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="px-2.5 py-1 rounded-lg text-xs font-bold ${isBorrowed ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'}">
+                                    ${isBorrowed ? '● 借用中' : '✓ 已歸還'}
+                                </span>
+                                ${dueBadge}
+                                <span class="text-base font-bold text-white">${rec.borrowerName}</span>
+                                <span class="text-xs text-zinc-400">(${rec.borrowerContact})</span>
+                                <span class="text-[11px] font-mono text-zinc-500">#${rec.id}</span>
+                            </div>
+                            <div class="text-xs text-amber-300 font-mono bg-[#0B0D12] px-2.5 py-1 rounded-lg border border-zinc-800 self-start sm:self-auto">
+                                📅 ${rec.startDate} ～ ${rec.endDate}（共 ${rec.days} 天 / ${totalPieces} 件）
+                            </div>
+                        </div>
+
+                        <!-- 借出器材與隨附配件清單 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                            ${rec.items.map(oi => `
+                                <div class="bg-[#0B0D12] p-3 rounded-xl border border-zinc-800/90 space-y-1.5">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="text-xs font-bold text-zinc-100">[${oi.category}] ${oi.name}</span>
+                                        <span class="text-xs font-bold text-amber-400 font-mono shrink-0">× ${oi.qty} 件</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1">
+                                        ${oi.accessories && oi.accessories.length > 0
+                                            ? oi.accessories.map(c => `<span class="text-[10px] px-1.5 py-0.5 rounded bg-[#131720] text-zinc-400 border border-zinc-800">${c}</span>`).join('')
+                                            : `<span class="text-[10px] text-zinc-600">僅主機本體</span>`
+                                        }
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        ${rec.note ? `<div class="text-xs text-zinc-400 bg-[#0B0D12] px-3 py-2 rounded-lg border border-zinc-800/60">📝 拍攝用途 / 備註：${rec.note}</div>` : ''}
+
+                        <!-- 紀錄底部時間與管理員操作 -->
+                        <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
+                            <div class="text-[11px] text-zinc-500">
+                                登記時間：${rec.createdAt}
+                                ${rec.returnedAt ? ` ｜ 歸還時間：<span class="text-emerald-400">${rec.returnedAt}</span>` : ''}
+                            </div>
+                            <div class="flex items-center gap-2 ml-auto">
+                                ${isAdminUnlocked ? `
+                                    <button type="button" onclick="deleteRecord('${rec.id}')" class="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 border border-zinc-700 text-xs transition-colors whitespace-nowrap cursor-pointer">
+                                        刪除紀錄
+                                    </button>
+                                    ${isBorrowed ? `
+                                        <button type="button" onclick="openReturnModal('${rec.id}')" class="px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs shadow-md shadow-emerald-500/20 transition-colors whitespace-nowrap cursor-pointer">
+                                            📦 點交配件並歸還
+                                        </button>
+                                    ` : ''}
+                                ` : `
+                                    <span class="text-[11px] text-zinc-500">🔒 唯讀狀態（連點 Logo 5 次解鎖後可點交歸還）</span>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openReturnModal(recordId) {
+            if (!isAdminUnlocked) {
+                openAdminLoginModal(() => openReturnModal(recordId));
+                return;
+            }
+            const rec = rentalRecords.find(r => r.id === recordId);
+            if (!rec) return;
+            currentReturningRecordId = recordId;
+
+            document.getElementById('return-modal-subtitle').textContent = `借用人：${rec.borrowerName} ｜ 請逐項核對隨附配件是否齊全`;
+            const container = document.getElementById('return-checklist-container');
+
+            container.innerHTML = rec.items.map(oi => `
+                <div class="bg-[#0B0D12] border border-zinc-800 rounded-xl p-3 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs sm:text-sm font-bold text-amber-400">${oi.name} × ${oi.qty} 件</span>
+                        <span class="text-[11px] text-zinc-400">${oi.category}</span>
+                    </div>
+                    <div class="space-y-1.5 pl-1">
+                        <label class="flex items-center gap-2 text-xs text-zinc-200 cursor-pointer">
+                            <input type="checkbox" checked class="return-check-item w-4 h-4 accent-emerald-500 rounded cursor-pointer">
+                            <span>器材主機本體外觀與功能正常（× ${oi.qty}）</span>
+                        </label>
+                        ${(oi.accessories || []).map(acc => `
+                            <label class="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer">
+                                <input type="checkbox" checked class="return-check-item w-4 h-4 accent-emerald-500 rounded cursor-pointer">
+                                <span>隨附配件：${acc}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('return-modal').classList.remove('hidden');
+        }
+
+        function closeReturnModal() {
+            document.getElementById('return-modal').classList.add('hidden');
+            currentReturningRecordId = null;
+        }
+
+        function checkAllReturnBoxes() {
+            document.querySelectorAll('.return-check-item').forEach(cb => cb.checked = true);
+        }
+
+        function confirmReturnSubmit() {
+            if (!isAdminUnlocked || !currentReturningRecordId) return;
+            const rec = rentalRecords.find(r => r.id === currentReturningRecordId);
+            if (!rec || rec.status !== 'borrowed') return;
+
+            rec.items.forEach(oi => {
+                const item = inventory.find(i => i.id === oi.itemId);
+                if (item) {
+                    item.rentedQty = Math.max(0, item.rentedQty - oi.qty);
+                }
+            });
+
+            rec.status = 'returned';
+            rec.returnedAt = new Date().toLocaleString('zh-TW', { hour12: false });
+            saveState();
+
+            closeReturnModal();
+            renderCatalog();
+            renderRecords();
+            renderManageTable();
+            updateStats();
+            showToast(`「${rec.borrowerName}」借用器材已點交歸還並補回庫存！`, 'success');
+        }
+
+        function deleteRecord(recordId) {
+            if (!isAdminUnlocked) {
+                openAdminLoginModal(() => deleteRecord(recordId));
+                return;
+            }
+            const rec = rentalRecords.find(r => r.id === recordId);
+            if (!rec) return;
+
+            openConfirmModal(
+                '刪除借用紀錄？',
+                rec.status === 'borrowed'
+                    ? `此筆「${rec.borrowerName}」仍在借出中，刪除紀錄將同時把器材數量釋放回庫存。確定刪除嗎？`
+                    : `確定要永久刪除「${rec.borrowerName}」的歷史借用紀錄嗎？`,
+                () => {
+                    if (rec.status === 'borrowed') {
+                        rec.items.forEach(oi => {
+                            const item = inventory.find(i => i.id === oi.itemId);
+                            if (item) item.rentedQty = Math.max(0, item.rentedQty - oi.qty);
+                        });
+                    }
+                    rentalRecords = rentalRecords.filter(r => r.id !== recordId);
+                    saveState();
+                    renderCatalog();
+                    renderRecords();
+                    renderManageTable();
+                    updateStats();
+                    showToast('已刪除借用紀錄', 'info');
+                }
+            );
+        }
+
+        // ==========================================
+        // 9. 管理員器材編輯操作
+        // ==========================================
+        function openGearEditorModal(itemId) {
+            if (!isAdminUnlocked) {
+                openAdminLoginModal(() => openGearEditorModal(itemId));
+                return;
+            }
+            const modal = document.getElementById('gear-editor-modal');
+            const titleEl = document.getElementById('editor-modal-title');
+            const deleteBtn = document.getElementById('delete-gear-btn');
+
+            if (itemId) {
+                const item = inventory.find(i => i.id === itemId);
+                if (!item) return;
+                titleEl.textContent = '編輯器材庫存與隨附配件';
+                document.getElementById('edit-gear-id').value = item.id;
+                document.getElementById('edit-gear-category').value = item.category;
+                document.getElementById('edit-gear-name').value = item.name;
+                document.getElementById('edit-gear-total').value = item.totalQty;
+                editingContents = [...(item.accessories || [])];
+                deleteBtn.classList.remove('hidden');
+            } else {
+                titleEl.textContent = '新增影視器材項目';
+                document.getElementById('edit-gear-id').value = '';
+                document.getElementById('edit-gear-category').value = '機身';
+                document.getElementById('edit-gear-name').value = '';
+                document.getElementById('edit-gear-total').value = 1;
+                editingContents = ['主機本體', '收納包'];
+                deleteBtn.classList.add('hidden');
+            }
+
+            document.getElementById('new-content-input').value = '';
+            renderEditorContents();
+            modal.classList.remove('hidden');
+        }
+
+        function closeGearEditorModal() {
+            document.getElementById('gear-editor-modal').classList.add('hidden');
+        }
+
+        function renderEditorContents() {
+            const container = document.getElementById('editor-contents-list');
+            const countEl = document.getElementById('editor-contents-count');
+            if (countEl) countEl.textContent = `${editingContents.length} 項配件`;
+
+            if (!container) return;
+            if (editingContents.length === 0) {
+                container.innerHTML = `<span class="text-xs text-zinc-500 my-auto mx-auto">尚未設定任何配件，請在上方輸入新增</span>`;
+                return;
+            }
+
+            container.innerHTML = editingContents.map((text, idx) => `
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#131720] border border-zinc-700 text-xs text-zinc-200">
+                    <span>${text}</span>
+                    <button type="button" onclick="removeContentTag(${idx})" class="text-zinc-500 hover:text-red-400 cursor-pointer">✕</button>
+                </span>
+            `).join('');
+        }
+
+        function handleNewContentKeydown(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addContentTag();
+            }
+        }
+
+        function addContentTag() {
+            const input = document.getElementById('new-content-input');
+            const val = input.value.trim();
+            if (!val) return;
+            editingContents.push(val);
+            input.value = '';
+            renderEditorContents();
+        }
+
+        function removeContentTag(index) {
+            editingContents.splice(index, 1);
+            renderEditorContents();
+        }
+
+        function saveGearEditor(event) {
+            event.preventDefault();
+            if (!isAdminUnlocked) return;
+
+            const id = document.getElementById('edit-gear-id').value;
+            const category = document.getElementById('edit-gear-category').value;
+            const name = document.getElementById('edit-gear-name').value.trim();
+            const newTotal = Math.max(1, parseInt(document.getElementById('edit-gear-total').value || '1', 10));
+
+            if (!name) return;
+
+            if (id) {
+                const item = inventory.find(i => i.id === id);
+                if (item) {
+                    item.category = category;
+                    item.name = name;
+                    item.totalQty = Math.max(item.rentedQty, newTotal);
+                    item.accessories = [...editingContents];
+                }
+            } else {
+                const newId = 'eq-' + Date.now();
+                inventory.unshift({
+                    id: newId,
+                    category,
+                    name,
+                    totalQty: newTotal,
+                    rentedQty: 0,
+                    accessories: [...editingContents]
+                });
+                cardQtySelection[newId] = 1;
+            }
+
+            saveState();
+            closeGearEditorModal();
+            renderCategoryTabs();
+            renderCatalog();
+            renderManageTable();
+            updateStats();
+            showToast(`已儲存「${name}」的庫存與配件設定！`, 'success');
+        }
+
+        function deleteCurrentEditingGear() {
+            if (!isAdminUnlocked) return;
+            const id = document.getElementById('edit-gear-id').value;
+            const item = inventory.find(i => i.id === id);
+            if (!item) return;
+
+            if (item.rentedQty > 0) {
+                showToast('該器材目前仍有借出中數量，請先點交歸還後再刪除！', 'error');
+                return;
+            }
+
+            closeGearEditorModal();
+            openConfirmModal(
+                '確定刪除此器材？',
+                `確定要從器材庫中永久移除「${item.name}」嗎？此操作無法復原。`,
+                () => {
+                    inventory = inventory.filter(i => i.id !== id);
+                    delete cart[id];
+                    saveState();
+                    renderCategoryTabs();
+                    renderCatalog();
+                    renderCart();
+                    renderManageTable();
+                    updateStats();
+                    showToast(`已刪除「${item.name}」`, 'info');
+                }
+            );
+        }
+
+        function renderManageTable() {
+            const tbody = document.getElementById('manage-table-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = inventory.map(item => {
+                const avail = item.totalQty - item.rentedQty;
+                return `
+                    <tr class="hover:bg-[#1C222E]/60 transition-colors">
+                        <td class="py-3 px-4 whitespace-nowrap">
+                            <span class="text-[11px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">${item.category}</span>
+                        </td>
+                        <td class="py-3 px-4 font-bold text-white">${item.name}</td>
+                        <td class="py-3 px-4 whitespace-nowrap font-mono">
+                            <span class="${avail === 0 ? 'text-red-400' : 'text-emerald-400'} font-bold">${avail}</span>
+                            <span class="text-zinc-500"> / ${item.totalQty} 件</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="flex flex-wrap gap-1 max-w-md">
+                                ${item.accessories && item.accessories.length > 0
+                                    ? item.accessories.map(c => `<span class="text-[10px] px-1.5 py-0.5 rounded bg-[#0B0D12] text-zinc-300 border border-zinc-800">${c}</span>`).join('')
+                                    : `<span class="text-[11px] text-zinc-600">無</span>`
+                                }
+                            </div>
+                        </td>
+                        <td class="py-3 px-4 text-right whitespace-nowrap">
+                            <button type="button" onclick="openGearEditorModal('${item.id}')" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-amber-500 hover:text-zinc-950 text-zinc-200 text-xs font-medium transition-colors cursor-pointer">
+                                ✏️ 編輯
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function exportInventoryJSON() {
+            if (!isAdminUnlocked) {
+                openAdminLoginModal(() => exportInventoryJSON());
+                return;
+            }
+            const dataStr = JSON.stringify(inventory, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kenny-gear-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('已匯出器材設定檔 (JSON)', 'success');
+        }
+
+        function importInventoryJSON(event) {
+            if (!isAdminUnlocked) {
+                openAdminLoginModal(null);
+                return;
+            }
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (!Array.isArray(imported) || imported.length === 0) throw new Error('格式錯誤');
+                    inventory = imported.map((item, idx) => ({
+                        id: item.id || 'imp-' + idx,
+                        category: item.category || '其他',
+                        name: item.name || '未命名器材',
+                        totalQty: Math.max(1, parseInt(item.totalQty ?? item.total ?? 1, 10)),
+                        rentedQty: Math.max(0, parseInt(item.rentedQty ?? 0, 10)),
+                        accessories: Array.isArray(item.accessories) ? item.accessories : (Array.isArray(item.contents) ? item.contents : [])
+                    }));
+                    saveState();
+                    renderCategoryTabs();
+                    renderCatalog();
+                    renderManageTable();
+                    updateStats();
+                    showToast(`成功匯入 ${inventory.length} 項器材資料！`, 'success');
+                } catch (err) {
+                    showToast('JSON 檔案格式不正確，匯入失敗', 'error');
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function confirmResetSystem() {
+            if (!isAdminUnlocked) {
+                openAdminLoginModal(() => confirmResetSystem());
+                return;
+            }
+            openConfirmModal(
+                '重置為預設器材清單？',
+                '此操作會將全部器材庫存恢復為初始預設數量（全部可借狀態），並清除本機借用測試紀錄。確定要繼續嗎？',
+                () => {
+                    inventory = cloneDefaultEquipment();
+                    rentalRecords = [];
+                    cart = {};
+                    inventory.forEach(item => cardQtySelection[item.id] = 1);
+                    saveState();
+                    renderCategoryTabs();
+                    renderCatalog();
+                    renderCart();
+                    renderRecords();
+                    renderManageTable();
+                    updateStats();
+                    showToast('已重置為肯尼器材庫預設清單！', 'info');
+                }
+            );
+        }
+
+        // ==========================================
+        // 10. 統計儀表板、確認對話框與 Toast 提示
+        // ==========================================
+        function updateStats() {
+            const total = inventory.reduce((sum, i) => sum + i.totalQty, 0);
+            const rented = inventory.reduce((sum, i) => sum + i.rentedQty, 0);
+            const avail = total - rented;
+            const activeOrders = rentalRecords.filter(r => r.status === 'borrowed').length;
+
+            const totalEl = document.getElementById('stat-total');
+            const availEl = document.getElementById('stat-available');
+            const rentedEl = document.getElementById('stat-rented');
+            const navBadge = document.getElementById('nav-active-badge');
+            const statusTextEl = document.getElementById('storage-status-text');
+
+            if (totalEl) totalEl.textContent = total;
+            if (availEl) availEl.textContent = avail;
+            if (rentedEl) rentedEl.textContent = rented;
+            if (statusTextEl) statusTextEl.textContent = `已連線 Formspree 雲端收件 (${inventory.length} 品項 / ${total} 件)`;
+
+            if (navBadge) {
+                if (activeOrders > 0) {
+                    navBadge.textContent = activeOrders;
+                    navBadge.classList.remove('hidden');
+                } else {
+                    navBadge.classList.add('hidden');
+                }
+            }
+        }
+
+        let confirmCallback = null;
+        function openConfirmModal(title, message, onConfirm) {
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-message').textContent = message;
+            confirmCallback = onConfirm;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            confirmCallback = null;
+        }
+
+        document.getElementById('confirm-action-btn').addEventListener('click', () => {
+            if (typeof confirmCallback === 'function') confirmCallback();
+            closeConfirmModal();
+        });
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            let colors = 'bg-zinc-800 border-zinc-700 text-white';
+            let icon = 'ℹ️';
+            if (type === 'success') {
+                colors = 'bg-zinc-900 border-emerald-500/50 text-emerald-300';
+                icon = '✅';
+            } else if (type === 'error') {
+                colors = 'bg-zinc-900 border-red-500/50 text-red-300';
+                icon = '⚠️';
+            }
+
+            toast.className = `pointer-events-auto flex items-center gap-2 px-4 py-3 rounded-xl border shadow-xl text-xs font-medium transition-all duration-300 transform -translate-y-2 opacity-0 ${colors}`;
+            toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+
+            container.appendChild(toast);
+            requestAnimationFrame(() => {
+                toast.classList.remove('-translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 2600);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+    </script>
+</body>
+</html>
