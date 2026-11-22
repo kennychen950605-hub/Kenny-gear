@@ -81,8 +81,13 @@
     <!-- ==================== VIEW 1: EQUIPMENT CATALOG ==================== -->
     <div id="view-catalog" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       
-      <!-- Left Column: Equipment List FIRST, Date Picker SECOND -->
+      <!-- Left Column: Hero Tagline + Equipment List FIRST, Date Picker SECOND -->
       <div class="lg:col-span-8 space-y-5">
+
+        <!-- Hero Tagline Banner -->
+        <div class="px-1 pt-0.5">
+          <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-100">拍攝，先選好器材</h2>
+        </div>
 
         <!-- 1. Inventory Summary & Search Bar -->
         <section class="bg-[#16161a] border border-zinc-800/90 rounded-3xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.35)] space-y-3.5">
@@ -118,12 +123,12 @@
           <!-- Rendered by JS -->
         </div>
 
-        <!-- 3. Equipment Grid (Now placed BEFORE Date Picker) -->
+        <!-- 3. Equipment Grid (Placed BEFORE Date Picker) -->
         <div id="equipment-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <!-- Rendered by JS -->
         </div>
 
-        <!-- 4. Prominent Date Range Selector Card (Swapped to AFTER Equipment Grid) -->
+        <!-- 4. Prominent Date Range Selector Card (Placed AFTER Equipment Grid) -->
         <section class="bg-[#16161a] border border-zinc-800/90 rounded-3xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.35)]">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5">
             <div class="flex items-center gap-2">
@@ -165,9 +170,9 @@
 
       </div>
 
-      <!-- Right Column (Desktop Sticky Request Form) -->
+      <!-- Right Column (Desktop Sticky Request Form with Independent Scroll) -->
       <aside class="hidden lg:block lg:col-span-4 sticky top-24">
-        <div id="desktop-cart-container" class="bg-[#16161a] border border-zinc-800/90 rounded-3xl p-5 shadow-[0_10px_30px_rgba(0,0,0,0.45)]">
+        <div id="desktop-cart-container" class="bg-[#16161a] border border-zinc-800/90 rounded-3xl p-5 shadow-[0_10px_30px_rgba(0,0,0,0.45)] max-h-[calc(100vh-7rem)] overflow-y-auto">
           <!-- Rendered by JS -->
         </div>
       </aside>
@@ -498,7 +503,7 @@
     // ==================== STATE ====================
     let equipmentList = [];
     let borrowRecords = [];
-    let cart = []; // { eqId, qty, customAccessories: [...] }
+    let cart = [];
     let selectedCategory = "全部";
     let isAdmin = false;
     let logoClickCount = 0;
@@ -1203,7 +1208,7 @@
           </div>
 
           <!-- Selected Equipment List -->
-          <div class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+          <div class="space-y-2.5 max-h-56 overflow-y-auto pr-1">
             ${cartItemsHTML}
           </div>
 
